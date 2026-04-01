@@ -11,6 +11,9 @@ const server = new IslandServer();
 const WIN_W = 320;
 const WIN_H = 160;
 
+const DEFAULT_Y = 8;
+var defaultX = 0;
+
 function centerX() {
   const { width } = screen.getPrimaryDisplay().workAreaSize;
   return Math.round(width / 2 - WIN_W / 2);
@@ -45,16 +48,17 @@ function createIsland() {
   // Forward mouse events — transparent areas click-through, opaque areas capture
   win.setIgnoreMouseEvents(true, { forward: true });
 
+  // Remember default position
+  defaultX = centerX();
   // Start off-screen
   win.setPosition(-9999, -9999);
 }
 
 function showWin() {
   if (!win) return;
-  // Only reposition if off-screen (dismissed), otherwise keep user's dragged position
   const [x] = win.getPosition();
   if (x <= -9000) {
-    win.setPosition(centerX(), 10);
+    win.setPosition(defaultX, DEFAULT_Y);
   }
   win.showInactive();
   win.setAlwaysOnTop(true, 'screen-saver');
@@ -145,7 +149,7 @@ ipcMain.on('drag-island', (_, dx, dy) => {
 
 ipcMain.on('recenter-island', () => {
   if (!win) return;
-  win.setPosition(centerX(), 10);
+  win.setPosition(defaultX, DEFAULT_Y);
 });
 
 app.on('window-all-closed', (e) => e.preventDefault());

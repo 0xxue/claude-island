@@ -64,10 +64,12 @@ function goToExpanded() {
   dotVisual.style.display = 'none';
 }
 
-// ═══ Drag support ═══
+// ═══ Drag support (RAF throttled) ═══
 var isDragging = false;
 var dragStartX = 0, dragStartY = 0;
 var wasDragged = false;
+var pendingDx = 0, pendingDy = 0;
+var dragRaf = null;
 
 document.addEventListener('mousedown', function(e) {
   if (e.target.tagName === 'BUTTON') return;
@@ -75,22 +77,38 @@ document.addEventListener('mousedown', function(e) {
   wasDragged = false;
   dragStartX = e.screenX;
   dragStartY = e.screenY;
+  pendingDx = 0;
+  pendingDy = 0;
+  // Disable CSS transitions during drag for smoother movement
+  islandEl.style.transition = 'none';
 });
 
 document.addEventListener('mousemove', function(e) {
   if (!isDragging) return;
   var dx = e.screenX - dragStartX;
   var dy = e.screenY - dragStartY;
-  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+  if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
     wasDragged = true;
-    window.island.drag(dx, dy);
+    pendingDx += dx;
+    pendingDy += dy;
     dragStartX = e.screenX;
     dragStartY = e.screenY;
+    // Batch moves into one RAF frame
+    if (!dragRaf) {
+      dragRaf = requestAnimationFrame(function() {
+        window.island.drag(pendingDx, pendingDy);
+        pendingDx = 0;
+        pendingDy = 0;
+        dragRaf = null;
+      });
+    }
   }
 });
 
 document.addEventListener('mouseup', function() {
   isDragging = false;
+  // Restore CSS transitions after drag
+  islandEl.style.transition = '';
 });
 
 // ═══ Click handler: single / double / triple ═══

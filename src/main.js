@@ -51,7 +51,11 @@ function createIsland() {
 
 function showWin() {
   if (!win) return;
-  win.setPosition(centerX(), 10);
+  // Only reposition if off-screen (dismissed), otherwise keep user's dragged position
+  const [x] = win.getPosition();
+  if (x <= -9000) {
+    win.setPosition(centerX(), 10);
+  }
   win.showInactive();
   win.setAlwaysOnTop(true, 'screen-saver');
 }
@@ -141,9 +145,7 @@ ipcMain.on('drag-island', (_, dx, dy) => {
 
 ipcMain.on('recenter-island', () => {
   if (!win) return;
-  const { width } = screen.getPrimaryDisplay().workAreaSize;
-  const [w] = win.getSize();
-  win.setPosition(Math.round(width / 2 - w / 2), 10);
+  win.setPosition(centerX(), 10);
 });
 
 app.on('window-all-closed', (e) => e.preventDefault());

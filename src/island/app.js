@@ -225,9 +225,9 @@ window.island.onEvent(function(event) {
   showIsland(event);
 });
 
-// Auto-expand (permission or user away) — but respect dot state
-window.island.onAutoExpand(function() {
-  if (state === 'dot') return; // User chose to minimize, respect it
+// Auto-expand: force=true (permission) ignores dot, force=false (stop+away) respects dot
+window.island.onAutoExpand(function(force) {
+  if (!force && state === 'dot') return;
   lockExpand = true;
   clearTimeout(lockTimer);
   lockTimer = setTimeout(function() { lockExpand = false; }, 8000);

@@ -95,13 +95,13 @@ function showIsland(event) {
 
   if (event.type === 'permission') {
     win.webContents.send('claude-event', event);
-    win.webContents.send('auto-expand');
+    win.webContents.send('auto-expand', true); // force=true, even from dot
     return;
   }
 
   if (event.type === 'stop') {
     isUserInEditor((inEditor) => {
-      if (!inEditor) win.webContents.send('auto-expand');
+      if (!inEditor) win.webContents.send('auto-expand', false);
       win.webContents.send('claude-event', event);
     });
     return;

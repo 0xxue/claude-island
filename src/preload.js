@@ -2,7 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('island', {
   onEvent: (callback) => ipcRenderer.on('claude-event', (_, event) => callback(event)),
-  onAutoExpand: (callback) => ipcRenderer.on('auto-expand', () => callback()),
+  onAutoExpand: (callback) => ipcRenderer.on('auto-expand', (_, force) => callback(force)),
   focusClaudeWindow: (source) => ipcRenderer.send('focus-claude', source),
   dismiss: () => ipcRenderer.send('dismiss-island'),
   expand: () => ipcRenderer.send('expand-island'),

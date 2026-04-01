@@ -13,6 +13,7 @@ var lockTimer = null;
 var clickTimer = null;
 var clickCount = 0;
 var stateChangeTime = 0;
+var currentSource = '';
 
 var TOOL_LABELS = {
   'Edit': '编辑', 'Write': '写入', 'Read': '读取', 'Bash': '命令',
@@ -127,6 +128,9 @@ function handleClick(e) {
 
 // ═══ Event display ═══
 function showIsland(event) {
+  // Track source of this event
+  if (event.source) currentSource = event.source;
+
   // Dot state: ignore all events except permission
   if (state === 'dot') {
     if (event.type === 'permission') {
@@ -196,7 +200,7 @@ document.getElementById('btn-dismiss').addEventListener('click', function(e) {
 });
 document.getElementById('btn-focus').addEventListener('click', function(e) {
   e.stopPropagation();
-  window.island.focusClaudeWindow();
+  window.island.focusClaudeWindow(currentSource);
 });
 
 window.island.onEvent(function(event) {

@@ -4,7 +4,7 @@ const { IslandServer } = require('./ws-server');
 
 let win = null;
 let tray = null;
-let lastSource = 'vscode'; // Track where Claude Code is running
+let lastSource = 'unknown'; // 'cli' | 'claude-vscode' | 'claude-desktop'
 const server = new IslandServer();
 
 // Fixed window size — big enough for expanded state. CSS handles visual size transitions.
@@ -73,7 +73,11 @@ function isUserInEditor(callback) {
 
 function showIsland(event) {
   if (!win) return;
-  if (event.source) lastSource = event.source;
+  if (event.source && event.source !== 'unknown') {
+    lastSource = event.source;
+    console.log('[Island] Source:', lastSource);
+  }
+
   if (event.type === 'end' || event.type === 'start') {
     hideWin();
     return;
@@ -118,7 +122,7 @@ app.whenReady().then(() => {
 
 const { focusClaude } = require('./window-focus');
 
-ipcMain.on('focus-claude', () => { focusClaude(); });
+ipcMain.on('focus-claude', (_, source) => { focusClaude(source); });
 ipcMain.on('dismiss-island', () => { hideWin(); });
 // expand/collapse/dot — all handled by CSS now, no window resize needed
 ipcMain.on('expand-island', () => {});

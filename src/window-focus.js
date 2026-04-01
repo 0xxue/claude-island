@@ -2,30 +2,28 @@ const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-function focusClaude() {
+function focusClaude(source) {
   const psScript = path.join(__dirname, '..', '_focus.ps1');
 
-  // Find the window whose title contains "claude" (case insensitive)
-  // This works for both CMD (title shows "claude") and VS Code terminal
-  fs.writeFileSync(psScript, `
-$shell = New-Object -ComObject WScript.Shell
-# First try: find window with "claude" in title (CMD/Terminal running claude)
-$procs = Get-Process | Where-Object { $_.MainWindowTitle -match 'claude|Claude' }
-foreach ($p in $procs) {
-    if ($p.ProcessName -ne 'electron') {
-        if ($shell.AppActivate($p.Id)) { exit 0 }
-    }
-}
-# Fallback: try common targets
-$targets = @('WindowsTerminal', 'cmd', 'Visual Studio Code')
-foreach ($t in $targets) {
-    if ($shell.AppActivate($t)) { exit 0 }
-}
-`);
+  var script;
+  if (source === 'cli') {
+    script = [
+      '$shell = New-Object -ComObject WScript.Shell',
+      '$wt = Get-Process WindowsTerminal -ErrorAction SilentlyContinue',
+      'if ($wt) { $shell.AppActivate($wt.Id); exit 0 }',
+      '$cm = Get-Process cmd -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 }',
+      'if ($cm) { $shell.AppActivate($cm[0].Id); exit 0 }',
+    ].join('\n');
+  } else {
+    script = [
+      '$shell = New-Object -ComObject WScript.Shell',
+      '$shell.AppActivate("Visual Studio Code") | Out-Null',
+    ].join('\n');
+  }
 
-  exec(`powershell -ExecutionPolicy Bypass -File "${psScript}"`, (err) => {
-    if (err) console.error('[Focus] Error:', err.message);
-    try { fs.unlinkSync(psScript); } catch {}
+  fs.writeFileSync(psScript, script);
+  exec('powershell -ExecutionPolicy Bypass -File "' + psScript + '"', function(err) {
+    try { fs.unlinkSync(psScript); } catch(e) {}
   });
 }
 

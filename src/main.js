@@ -6,19 +6,23 @@ let win = null;
 let tray = null;
 const server = new IslandServer();
 
-const COLLAPSED = { w: 220, h: 30 };
-const EXPANDED = { w: 240, h: 125 };
+// Fixed window size — big enough for expanded state. CSS handles visual size transitions.
+const WIN_W = 320;
+const WIN_H = 160;
+
+function centerX() {
+  const { width } = screen.getPrimaryDisplay().workAreaSize;
+  return Math.round(width / 2 - WIN_W / 2);
+}
 
 function createIsland() {
-  const display = screen.getPrimaryDisplay();
-  const { width } = display.workAreaSize;
-  console.log('[Island] Scale:', display.scaleFactor);
+  console.log('[Island] Scale:', screen.getPrimaryDisplay().scaleFactor);
 
   win = new BrowserWindow({
-    width: COLLAPSED.w,
-    height: COLLAPSED.h,
-    x: Math.round(width / 2 - COLLAPSED.w / 2),
-    y: 4,
+    width: WIN_W,
+    height: WIN_H,
+    x: centerX(),
+    y: 8,
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -27,7 +31,7 @@ function createIsland() {
     minimizable: false,
     maximizable: false,
     closable: false,
-    hasShadow: true,
+    hasShadow: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -35,35 +39,27 @@ function createIsland() {
     },
   });
 
-  win.setMinimumSize(50, 20);
   win.loadFile(path.join(__dirname, 'island', 'index.html'));
   win.setAlwaysOnTop(true, 'screen-saver');
-  win.hide();
+  // Forward mouse events — transparent areas click-through, opaque areas capture
+  win.setIgnoreMouseEvents(true, { forward: true });
+
+  // Start off-screen
+  win.setPosition(-9999, -9999);
 }
 
-function setCollapsed() {
+function showWin() {
   if (!win) return;
-  const { width } = screen.getPrimaryDisplay().workAreaSize;
-  win.setBounds({
-    x: Math.round(width / 2 - COLLAPSED.w / 2),
-    y: 4,
-    width: COLLAPSED.w,
-    height: COLLAPSED.h,
-  });
+  win.setPosition(centerX(), 8);
+  win.showInactive();
+  win.setAlwaysOnTop(true, 'screen-saver');
 }
 
-function setExpanded() {
+function hideWin() {
   if (!win) return;
-  const { width } = screen.getPrimaryDisplay().workAreaSize;
-  win.setBounds({
-    x: Math.round(width / 2 - EXPANDED.w / 2),
-    y: 4,
-    width: EXPANDED.w,
-    height: EXPANDED.h,
-  });
+  win.setPosition(-9999, -9999);
 }
 
-// Check if user is in VS Code / Terminal
 function isUserInEditor(callback) {
   const { exec } = require('child_process');
   const script = path.join(__dirname, 'check-focus.ps1');
@@ -77,42 +73,26 @@ function isUserInEditor(callback) {
 function showIsland(event) {
   if (!win) return;
   if (event.type === 'end' || event.type === 'start') {
-    win.setPosition(-9999, -9999);
+    hideWin();
     return;
   }
 
-  // Permission: always auto-expand (needs user action)
+  showWin();
+
   if (event.type === 'permission') {
-    setExpanded();
-    win.show();
-    win.setAlwaysOnTop(true, 'screen-saver');
     win.webContents.send('claude-event', event);
     win.webContents.send('auto-expand');
-    console.log('[Island] Show:', event.type, '(auto-expand)');
     return;
   }
 
-  // Stop: auto-expand only if user is NOT in editor
   if (event.type === 'stop') {
     isUserInEditor((inEditor) => {
-      if (inEditor) {
-        setCollapsed();
-      } else {
-        setExpanded();
-        win.webContents.send('auto-expand');
-      }
-      win.show();
-      win.setAlwaysOnTop(true, 'screen-saver');
+      if (!inEditor) win.webContents.send('auto-expand');
       win.webContents.send('claude-event', event);
-      console.log('[Island] Show:', event.type, inEditor ? '(in editor)' : '(away → expanded)');
     });
     return;
   }
 
-  // tool_start/tool_done/notification: just show collapsed
-  setCollapsed();
-  win.show();
-  win.setAlwaysOnTop(true, 'screen-saver');
   win.webContents.send('claude-event', event);
 }
 
@@ -134,28 +114,17 @@ app.whenReady().then(() => {
   server.on('claude-event', showIsland);
 });
 
-// IPC
 const { focusClaude } = require('./window-focus');
 
-ipcMain.on('focus-claude', () => {
-  focusClaude();
-  // Don't hide — island stays until next event or user dismisses
-});
-
-ipcMain.on('dismiss-island', () => {
-  // Move off screen instead of hide (transparent window can't show again after hide)
+ipcMain.on('focus-claude', () => { focusClaude(); });
+ipcMain.on('dismiss-island', () => { hideWin(); });
+// expand/collapse/dot — all handled by CSS now, no window resize needed
+ipcMain.on('expand-island', () => {});
+ipcMain.on('collapse-island', () => {});
+ipcMain.on('dot-island', () => {});
+ipcMain.on('set-clickable', (_, v) => {
   if (!win) return;
-  win.setPosition(-9999, -9999);
-});
-
-ipcMain.on('expand-island', () => {
-  console.log('[Island] IPC: expand');
-  setExpanded();
-});
-
-ipcMain.on('collapse-island', () => {
-  console.log('[Island] IPC: collapse');
-  setCollapsed();
+  win.setIgnoreMouseEvents(!v, { forward: true });
 });
 
 app.on('window-all-closed', (e) => e.preventDefault());

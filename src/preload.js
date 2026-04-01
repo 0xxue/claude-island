@@ -7,4 +7,6 @@ contextBridge.exposeInMainWorld('island', {
   dismiss: () => ipcRenderer.send('dismiss-island'),
   expand: () => ipcRenderer.send('expand-island'),
   collapse: () => ipcRenderer.send('collapse-island'),
+  toDot: () => ipcRenderer.send('dot-island'),
+  setClickable: (v) => ipcRenderer.send('set-clickable', v),
 });

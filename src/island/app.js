@@ -6,9 +6,13 @@ var statusEl = document.getElementById('status');
 var iconEl = document.getElementById('icon');
 var detailEl = document.getElementById('detail');
 
-var expanded = false;
+// 3 states: 'dot' | 'collapsed' | 'expanded'
+var state = 'collapsed';
 var lockExpand = false;
 var lockTimer = null;
+var clickTimer = null;
+var clickCount = 0;
+var stateChangeTime = 0;
 
 var TOOL_LABELS = {
   'Edit': '编辑', 'Write': '写入', 'Read': '读取', 'Bash': '命令',
@@ -24,8 +28,9 @@ function sp(p) {
 }
 
 function triggerPulse() {
+  if (state === 'dot') return;
   islandEl.classList.remove('pulse');
-  void islandEl.offsetWidth; // force reflow
+  void islandEl.offsetWidth;
   islandEl.classList.add('pulse');
 }
 
@@ -34,64 +39,100 @@ function setStatus(text, cls) {
   statusEl.className = 'status' + (cls ? ' ' + cls : '');
 }
 
+// ═══ State transitions ═══
+var dotVisual = document.querySelector('.dot-visual');
+
+function goToDot() {
+  state = 'dot';
+  stateChangeTime = Date.now();
+  islandEl.className = 'island dot-state';
+  dotVisual.style.display = 'block';
+}
+
+function goToCollapsed() {
+  state = 'collapsed';
+  stateChangeTime = Date.now();
+  islandEl.className = 'island collapsed';
+  dotVisual.style.display = 'none';
+}
+
+function goToExpanded() {
+  state = 'expanded';
+  stateChangeTime = Date.now();
+  islandEl.className = 'island expanded';
+  dotVisual.style.display = 'none';
+}
+
+// ═══ Click handler: single vs double ═══
+function handleClick(e) {
+  if (e && e.target.tagName === 'BUTTON') return;
+  // Ignore clicks within 500ms of state change (prevents double-fire)
+  if (Date.now() - stateChangeTime < 500) return;
+
+  clickCount++;
+
+  if (clickCount === 1) {
+    clickTimer = setTimeout(function() {
+      // Single click
+      if (state === 'dot') goToCollapsed();
+      else if (state === 'collapsed') goToExpanded();
+      else if (state === 'expanded') goToCollapsed();
+      clickCount = 0;
+    }, 300);
+  } else if (clickCount === 2) {
+    clearTimeout(clickTimer);
+    clickCount = 0;
+    // Double click
+    if (state === 'collapsed') goToDot();
+    else if (state === 'expanded') goToDot();
+    else if (state === 'dot') goToExpanded();
+  }
+}
+
+// ═══ Event display ═══
 function showIsland(event) {
+  // Dot state: ignore all events except permission
+  if (state === 'dot') {
+    if (event.type === 'permission') {
+      goToCollapsed();
+    } else {
+      return;
+    }
+  }
+
   var icon = '⚡', detail = '', statusText = '', statusCls = '';
 
   switch (event.type) {
     case 'tool_start':
-      icon = '⚡';
-      statusText = tl(event.tool) + '...';
-      statusCls = 'active';
+      icon = '⚡'; statusText = tl(event.tool) + '...'; statusCls = 'active';
       if (event.file) detail = sp(event.file);
       else if (event.command) detail = '$ ' + event.command;
       else if (event.pattern || event.query) detail = event.pattern || event.query;
       else detail = '执行中';
-      labelEl.textContent = 'Claude Code';
       break;
-
     case 'tool_done':
-      icon = '✓';
-      statusText = tl(event.tool) + ' ✓';
-      statusCls = 'done';
+      icon = '✓'; statusText = tl(event.tool) + ' ✓'; statusCls = 'done';
       detail = event.file ? sp(event.file) : '完成';
-      labelEl.textContent = 'Claude Code';
       break;
-
     case 'permission':
-      icon = '🔐';
-      statusText = '需要审批';
-      statusCls = 'warn';
+      icon = '🔐'; statusText = '需要审批'; statusCls = 'warn';
       detail = event.tool && event.file ? tl(event.tool) + ': ' + sp(event.file) : event.tool ? '审批: ' + tl(event.tool) : '等待审批';
-      labelEl.textContent = 'Claude Code';
       triggerPulse();
       break;
-
     case 'stop':
-      icon = '💬';
-      statusText = '等待输入';
-      statusCls = '';
+      icon = '💬'; statusText = '等待输入'; statusCls = '';
       detail = event.message ? event.message.substring(0, 50) : '等待你的下一步';
-      labelEl.textContent = 'Claude Code';
       triggerPulse();
       break;
-
     case 'notification':
-      icon = '📢';
-      statusText = event.title || '通知';
-      statusCls = 'done';
+      icon = '📢'; statusText = event.title || '通知'; statusCls = 'done';
       detail = event.message || '';
-      labelEl.textContent = 'Claude Code';
       triggerPulse();
       break;
-
     case 'start':
-      icon = '🚀';
-      statusText = '会话开始';
-      statusCls = 'done';
+      icon = '🚀'; statusText = '会话开始'; statusCls = 'done';
       detail = '新会话';
-      labelEl.textContent = 'Claude Code';
       break;
-
     case 'end':
       window.island.dismiss();
       return;
@@ -103,46 +144,45 @@ function showIsland(event) {
   iconEl.textContent = icon;
   detailEl.textContent = detail;
 
-  // Auto collapse on new event, but not if recently auto-expanded (permission/stop)
-  if (expanded && !lockExpand) {
-    expanded = false;
-    window.island.collapse();
-    islandEl.classList.remove('expanded');
-    islandEl.classList.add('collapsed');
-  }
 }
 
-function doExpand() {
-  expanded = true;
-  window.island.expand();
-  islandEl.classList.add('expanded');
-  islandEl.classList.remove('collapsed');
-}
+// ═══ Bind events ═══
+document.getElementById('collapsed-area').addEventListener('click', handleClick);
+document.getElementById('header-area').addEventListener('click', handleClick);
+// Dot state: click anywhere in window to restore
+document.body.addEventListener('click', function(e) {
+  if (state === 'dot') handleClick(e);
+});
 
-function doCollapse() {
-  expanded = false;
-  window.island.collapse();
-  islandEl.classList.remove('expanded');
-  islandEl.classList.add('collapsed');
-}
-
-document.getElementById('collapsed-area').addEventListener('click', doExpand);
-document.getElementById('header-area').addEventListener('click', doCollapse);
-document.getElementById('btn-dismiss').addEventListener('click', function() { window.island.dismiss(); });
-document.getElementById('btn-focus').addEventListener('click', function() { window.island.focusClaudeWindow(); });
+document.getElementById('btn-dismiss').addEventListener('click', function(e) {
+  e.stopPropagation();
+  window.island.dismiss();
+});
+document.getElementById('btn-focus').addEventListener('click', function(e) {
+  e.stopPropagation();
+  window.island.focusClaudeWindow();
+});
 
 window.island.onEvent(function(event) {
   showIsland(event);
 });
 
+// Auto-expand (permission or user away) — but respect dot state
 window.island.onAutoExpand(function() {
-  expanded = true;
+  if (state === 'dot') return; // User chose to minimize, respect it
   lockExpand = true;
   clearTimeout(lockTimer);
-  // Keep expanded for 8 seconds before allowing auto-collapse
   lockTimer = setTimeout(function() { lockExpand = false; }, 8000);
-  islandEl.classList.add('expanded');
-  islandEl.classList.remove('collapsed');
+  goToExpanded();
 });
 
-islandEl.classList.add('collapsed');
+// Mouse enter/leave — make window clickable only when hovering the island
+islandEl.addEventListener('mouseenter', function() {
+  window.island.setClickable(true);
+});
+islandEl.addEventListener('mouseleave', function() {
+  window.island.setClickable(false);
+});
+
+// Start collapsed
+goToCollapsed();

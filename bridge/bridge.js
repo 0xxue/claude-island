@@ -22,6 +22,7 @@ setTimeout(() => {
     timestamp: Date.now(),
     sessionId: process.env.session_id || '',
     cwd: process.env.cwd || '',
+    source: process.env.TERM_PROGRAM === 'vscode' ? 'vscode' : process.env.WT_SESSION ? 'terminal' : (process.env.VSCODE_PID ? 'vscode' : 'terminal'),
   };
 
   // Parse stdin JSON for rich data

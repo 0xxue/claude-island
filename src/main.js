@@ -4,6 +4,7 @@ const { IslandServer } = require('./ws-server');
 
 let win = null;
 let tray = null;
+let lastSource = 'vscode'; // Track where Claude Code is running
 const server = new IslandServer();
 
 // Fixed window size — big enough for expanded state. CSS handles visual size transitions.
@@ -72,6 +73,7 @@ function isUserInEditor(callback) {
 
 function showIsland(event) {
   if (!win) return;
+  if (event.source) lastSource = event.source;
   if (event.type === 'end' || event.type === 'start') {
     hideWin();
     return;

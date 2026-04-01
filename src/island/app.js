@@ -1,45 +1,116 @@
-const islandEl = document.getElementById('island');
-const dotEl = document.getElementById('dot');
-const dot2El = document.getElementById('dot2');
-const statusEl = document.getElementById('status');
-const iconEl = document.getElementById('icon');
-const detailEl = document.getElementById('detail');
+var islandEl = document.getElementById('island');
+var dotEl = document.getElementById('dot');
+var dot2El = document.getElementById('dot2');
+var labelEl = document.getElementById('label');
+var statusEl = document.getElementById('status');
+var iconEl = document.getElementById('icon');
+var detailEl = document.getElementById('detail');
 
-let expanded = false;
+var expanded = false;
 
-const EVENT_CONFIG = {
-  stop: { icon: '⏳', status: '等待操作', detail: '正在等待你的下一步操作', dot: '' },
-  permission: { icon: '🔐', status: '需要审批', detail: '', dot: 'orange' },
-  notification: { icon: '💬', status: '通知', detail: '', dot: 'green' },
-  error: { icon: '❌', status: '出错了', detail: '', dot: 'red' },
-  start: { icon: '🚀', status: '会话开始', detail: 'Claude Code 已启动', dot: 'green' },
-  end: { icon: '✅', status: '已完成', detail: '会话已结束', dot: 'green' },
+var TOOL_LABELS = {
+  'Edit': '编辑', 'Write': '写入', 'Read': '读取', 'Bash': '命令',
+  'Glob': '搜索文件', 'Grep': '搜索内容', 'Agent': '子任务',
+  'WebSearch': '网页搜索', 'WebFetch': '抓取网页', 'Skill': '技能',
 };
 
+function tl(n) { return TOOL_LABELS[n] || n || '工具'; }
+function sp(p) {
+  if (!p) return '';
+  var s = p.replace(/\\/g, '/').split('/');
+  return s.length > 2 ? '.../' + s.slice(-2).join('/') : p;
+}
+
+function triggerPulse() {
+  islandEl.classList.remove('pulse');
+  void islandEl.offsetWidth; // force reflow
+  islandEl.classList.add('pulse');
+}
+
+function setStatus(text, cls) {
+  statusEl.textContent = text;
+  statusEl.className = 'status' + (cls ? ' ' + cls : '');
+}
+
 function showIsland(event) {
-  if (event.type === 'end') {
-    window.island.dismiss();
-    return;
+  var icon = '⚡', detail = '', statusText = '', statusCls = '';
+
+  switch (event.type) {
+    case 'tool_start':
+      icon = '⚡';
+      statusText = tl(event.tool) + '...';
+      statusCls = 'active';
+      if (event.file) detail = sp(event.file);
+      else if (event.command) detail = '$ ' + event.command;
+      else if (event.pattern || event.query) detail = event.pattern || event.query;
+      else detail = '执行中';
+      labelEl.textContent = 'Claude Code';
+      break;
+
+    case 'tool_done':
+      icon = '✓';
+      statusText = tl(event.tool) + ' ✓';
+      statusCls = 'done';
+      detail = event.file ? sp(event.file) : '完成';
+      labelEl.textContent = 'Claude Code';
+      break;
+
+    case 'permission':
+      icon = '🔐';
+      statusText = '需要审批';
+      statusCls = 'warn';
+      detail = event.tool && event.file ? tl(event.tool) + ': ' + sp(event.file) : event.tool ? '审批: ' + tl(event.tool) : '等待审批';
+      labelEl.textContent = 'Claude Code';
+      triggerPulse();
+      break;
+
+    case 'stop':
+      icon = '💬';
+      statusText = '等待输入';
+      statusCls = '';
+      detail = event.message ? event.message.substring(0, 50) : '等待你的下一步';
+      labelEl.textContent = 'Claude Code';
+      triggerPulse();
+      break;
+
+    case 'notification':
+      icon = '📢';
+      statusText = event.title || '通知';
+      statusCls = 'done';
+      detail = event.message || '';
+      labelEl.textContent = 'Claude Code';
+      triggerPulse();
+      break;
+
+    case 'start':
+      icon = '🚀';
+      statusText = '会话开始';
+      statusCls = 'done';
+      detail = '新会话';
+      labelEl.textContent = 'Claude Code';
+      break;
+
+    case 'end':
+      window.island.dismiss();
+      return;
   }
-  var config = EVENT_CONFIG[event.type] || EVENT_CONFIG.stop;
-  statusEl.textContent = config.status;
-  dotEl.className = 'dot ' + (config.dot || '');
-  dot2El.className = 'dot ' + (config.dot || '');
-  iconEl.textContent = config.icon;
-  if (event.type === 'permission' && event.tool) {
-    detailEl.textContent = '请审批: ' + event.tool;
-  } else if (event.message) {
-    detailEl.textContent = event.message.substring(0, 80);
-  } else {
-    detailEl.textContent = config.detail;
+
+  setStatus(statusText, statusCls);
+  dotEl.className = 'dot' + (statusCls === 'done' ? ' green' : statusCls === 'warn' ? ' orange' : statusCls === 'active' ? ' blue' : '');
+  dot2El.className = dotEl.className;
+  iconEl.textContent = icon;
+  detailEl.textContent = detail;
+
+  // Auto collapse on new event
+  if (expanded) {
+    expanded = false;
+    window.island.collapse();
+    islandEl.classList.remove('expanded');
+    islandEl.classList.add('collapsed');
   }
-  islandEl.classList.add('collapsed');
-  islandEl.classList.remove('expanded');
-  expanded = false;
 }
 
 function doExpand() {
-  console.log('EXPAND');
   expanded = true;
   window.island.expand();
   islandEl.classList.add('expanded');
@@ -47,33 +118,18 @@ function doExpand() {
 }
 
 function doCollapse() {
-  console.log('COLLAPSE');
   expanded = false;
   window.island.collapse();
   islandEl.classList.remove('expanded');
   islandEl.classList.add('collapsed');
 }
 
-// Bind click events via JS (not inline onclick)
-document.getElementById('collapsed-area').addEventListener('click', function() {
-  doExpand();
-});
+document.getElementById('collapsed-area').addEventListener('click', doExpand);
+document.getElementById('header-area').addEventListener('click', doCollapse);
+document.getElementById('btn-dismiss').addEventListener('click', function() { window.island.dismiss(); });
+document.getElementById('btn-focus').addEventListener('click', function() { window.island.focusClaudeWindow(); });
 
-document.getElementById('header-area').addEventListener('click', function() {
-  doCollapse();
-});
-
-document.getElementById('btn-dismiss').addEventListener('click', function() {
-  window.island.dismiss();
-});
-
-document.getElementById('btn-focus').addEventListener('click', function() {
-  window.island.focusClaudeWindow();
-});
-
-// Listen for events from main process
 window.island.onEvent(function(event) {
-  console.log('Event received:', event);
   showIsland(event);
 });
 

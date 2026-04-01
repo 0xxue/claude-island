@@ -1,65 +1,55 @@
 #!/usr/bin/env node
 /**
- * Claude Island Bridge — lightweight CLI invoked by Claude Code hooks.
- * Sends event to the running Island app via WebSocket, then exits.
- *
- * Usage (from hooks):
- *   node bridge.js --event stop
- *   node bridge.js --event permission --tool "Edit"
- *   node bridge.js --event notification --message "Task complete"
+ * Claude Island Bridge — reads hook data from stdin + args, sends to Island app.
  */
 const WebSocket = require('ws');
-
 const PORT = 19432;
-const args = process.argv.slice(2);
 
-function parseArgs(args) {
-  const result = { type: 'stop', tool: '', message: '' };
-  for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--event' && args[i + 1]) result.type = args[++i];
-    if (args[i] === '--tool' && args[i + 1]) result.tool = args[++i];
-    if (args[i] === '--message' && args[i + 1]) result.message = args[++i];
-  }
-  // Also read from environment variables (Claude Code hook env)
-  result.sessionId = process.env.session_id || '';
-  result.cwd = process.env.cwd || '';
-  result.timestamp = Date.now();
-  return result;
+const args = process.argv.slice(2);
+let eventType = 'stop';
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--event' && args[i + 1]) eventType = args[++i];
 }
 
-const event = parseArgs(args);
-
-// Also try to read stdin JSON (Claude Code passes hook data via stdin)
-let stdinData = '';
+// Read stdin (Claude Code passes JSON hook data)
+let stdinBuf = '';
 process.stdin.setEncoding('utf8');
-process.stdin.on('data', (chunk) => { stdinData += chunk; });
+process.stdin.on('data', (c) => { stdinBuf += c; });
 
-// Send after short delay to collect stdin
 setTimeout(() => {
-  if (stdinData) {
+  const event = {
+    type: eventType,
+    timestamp: Date.now(),
+    sessionId: process.env.session_id || '',
+    cwd: process.env.cwd || '',
+  };
+
+  // Parse stdin JSON for rich data
+  if (stdinBuf) {
     try {
-      const hookData = JSON.parse(stdinData);
-      if (hookData.tool_name) event.tool = hookData.tool_name;
-      if (hookData.message) event.message = hookData.message;
-      if (hookData.last_assistant_message) {
-        event.message = hookData.last_assistant_message.substring(0, 100);
+      const d = JSON.parse(stdinBuf);
+      // PreToolUse / PostToolUse
+      if (d.tool_name) event.tool = d.tool_name;
+      if (d.tool_input) {
+        event.toolInput = typeof d.tool_input === 'string' ? d.tool_input : JSON.stringify(d.tool_input).substring(0, 200);
+        // Extract file path from tool input
+        if (d.tool_input.file_path) event.file = d.tool_input.file_path;
+        if (d.tool_input.command) event.command = d.tool_input.command.substring(0, 100);
+        if (d.tool_input.pattern) event.pattern = d.tool_input.pattern;
+        if (d.tool_input.query) event.query = d.tool_input.query;
       }
+      // PermissionRequest
+      if (d.permission_suggestions) event.suggestions = d.permission_suggestions;
+      // Stop
+      if (d.last_assistant_message) event.message = d.last_assistant_message.substring(0, 150);
+      // Notification
+      if (d.message) event.message = d.message;
+      if (d.title) event.title = d.title;
     } catch {}
   }
 
   const ws = new WebSocket(`ws://127.0.0.1:${PORT}`);
-
-  ws.on('open', () => {
-    ws.send(JSON.stringify(event));
-    ws.close();
-    process.exit(0);
-  });
-
-  ws.on('error', () => {
-    // Island app not running, silently exit
-    process.exit(0);
-  });
-
-  // Timeout safety
+  ws.on('open', () => { ws.send(JSON.stringify(event)); ws.close(); process.exit(0); });
+  ws.on('error', () => process.exit(0));
   setTimeout(() => process.exit(0), 2000);
-}, 100);
+}, 80);

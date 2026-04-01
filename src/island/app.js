@@ -7,6 +7,8 @@ var iconEl = document.getElementById('icon');
 var detailEl = document.getElementById('detail');
 
 var expanded = false;
+var lockExpand = false;
+var lockTimer = null;
 
 var TOOL_LABELS = {
   'Edit': '编辑', 'Write': '写入', 'Read': '读取', 'Bash': '命令',
@@ -101,8 +103,8 @@ function showIsland(event) {
   iconEl.textContent = icon;
   detailEl.textContent = detail;
 
-  // Auto collapse on new event
-  if (expanded) {
+  // Auto collapse on new event, but not if recently auto-expanded (permission/stop)
+  if (expanded && !lockExpand) {
     expanded = false;
     window.island.collapse();
     islandEl.classList.remove('expanded');
@@ -131,6 +133,16 @@ document.getElementById('btn-focus').addEventListener('click', function() { wind
 
 window.island.onEvent(function(event) {
   showIsland(event);
+});
+
+window.island.onAutoExpand(function() {
+  expanded = true;
+  lockExpand = true;
+  clearTimeout(lockTimer);
+  // Keep expanded for 8 seconds before allowing auto-collapse
+  lockTimer = setTimeout(function() { lockExpand = false; }, 8000);
+  islandEl.classList.add('expanded');
+  islandEl.classList.remove('collapsed');
 });
 
 islandEl.classList.add('collapsed');

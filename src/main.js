@@ -7,7 +7,7 @@ let tray = null;
 const server = new IslandServer();
 
 const COLLAPSED = { w: 220, h: 30 };
-const EXPANDED = { w: 240, h: 110 };
+const EXPANDED = { w: 240, h: 125 };
 
 function createIsland() {
   const display = screen.getPrimaryDisplay();
@@ -63,18 +63,57 @@ function setExpanded() {
   });
 }
 
+// Check if user is in VS Code / Terminal
+function isUserInEditor(callback) {
+  const { exec } = require('child_process');
+  const script = path.join(__dirname, 'check-focus.ps1');
+  exec(`powershell -NoProfile -ExecutionPolicy Bypass -File "${script}"`, (err, stdout) => {
+    const name = (stdout || '').trim().toLowerCase();
+    const inEditor = name === 'code' || name === 'windowsterminal' || name === 'cmd' || name === 'powershell' || name === 'electron';
+    callback(inEditor);
+  });
+}
+
 function showIsland(event) {
   if (!win) return;
-  // SessionEnd or SessionStart = user is active, hide island
   if (event.type === 'end' || event.type === 'start') {
     win.setPosition(-9999, -9999);
     return;
   }
+
+  // Permission: always auto-expand (needs user action)
+  if (event.type === 'permission') {
+    setExpanded();
+    win.show();
+    win.setAlwaysOnTop(true, 'screen-saver');
+    win.webContents.send('claude-event', event);
+    win.webContents.send('auto-expand');
+    console.log('[Island] Show:', event.type, '(auto-expand)');
+    return;
+  }
+
+  // Stop: auto-expand only if user is NOT in editor
+  if (event.type === 'stop') {
+    isUserInEditor((inEditor) => {
+      if (inEditor) {
+        setCollapsed();
+      } else {
+        setExpanded();
+        win.webContents.send('auto-expand');
+      }
+      win.show();
+      win.setAlwaysOnTop(true, 'screen-saver');
+      win.webContents.send('claude-event', event);
+      console.log('[Island] Show:', event.type, inEditor ? '(in editor)' : '(away → expanded)');
+    });
+    return;
+  }
+
+  // tool_start/tool_done/notification: just show collapsed
   setCollapsed();
   win.show();
   win.setAlwaysOnTop(true, 'screen-saver');
   win.webContents.send('claude-event', event);
-  console.log('[Island] Show:', event.type);
 }
 
 function createTray() {

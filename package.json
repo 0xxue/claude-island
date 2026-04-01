@@ -1,0 +1,26 @@
+{
+  "name": "claude-island",
+  "version": "1.0.0",
+  "description": "Dynamic Island style notifications for Claude Code",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "setup": "node install/setup-hooks.js",
+    "bridge": "node bridge/bridge.js"
+  },
+  "keywords": [
+    "claude",
+    "dynamic-island",
+    "notification",
+    "electron"
+  ],
+  "author": "0xxue",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^31.7.0"
+  },
+  "dependencies": {
+    "ws": "^8.20.0"
+  }
+}

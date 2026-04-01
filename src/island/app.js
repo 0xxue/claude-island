@@ -146,8 +146,10 @@ function handleClick(e) {
 
 // ═══ Event display ═══
 function showIsland(event) {
-  // Track source of this event
-  if (event.source) currentSource = event.source;
+  // Track source — only update on stop/permission
+  if (event.source && (event.type === 'stop' || event.type === 'permission')) {
+    currentSource = event.source;
+  }
 
   // Dot state: ignore all events except permission
   if (state === 'dot') {

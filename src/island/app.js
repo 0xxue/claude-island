@@ -156,7 +156,7 @@ document.body.addEventListener('click', function(e) {
 
 document.getElementById('btn-dismiss').addEventListener('click', function(e) {
   e.stopPropagation();
-  window.island.dismiss();
+  goToDot();
 });
 document.getElementById('btn-focus').addEventListener('click', function(e) {
   e.stopPropagation();

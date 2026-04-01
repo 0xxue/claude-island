@@ -63,10 +63,39 @@ function goToExpanded() {
   dotVisual.style.display = 'none';
 }
 
-// ═══ Click handler: single vs double ═══
+// ═══ Drag support ═══
+var isDragging = false;
+var dragStartX = 0, dragStartY = 0;
+var wasDragged = false;
+
+document.addEventListener('mousedown', function(e) {
+  if (e.target.tagName === 'BUTTON') return;
+  isDragging = true;
+  wasDragged = false;
+  dragStartX = e.screenX;
+  dragStartY = e.screenY;
+});
+
+document.addEventListener('mousemove', function(e) {
+  if (!isDragging) return;
+  var dx = e.screenX - dragStartX;
+  var dy = e.screenY - dragStartY;
+  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+    wasDragged = true;
+    window.island.drag(dx, dy);
+    dragStartX = e.screenX;
+    dragStartY = e.screenY;
+  }
+});
+
+document.addEventListener('mouseup', function() {
+  isDragging = false;
+});
+
+// ═══ Click handler: single / double / triple ═══
 function handleClick(e) {
   if (e && e.target.tagName === 'BUTTON') return;
-  // Ignore clicks within 500ms of state change (prevents double-fire)
+  if (wasDragged) { wasDragged = false; return; } // Ignore click after drag
   if (Date.now() - stateChangeTime < 500) return;
 
   clickCount++;
@@ -81,11 +110,18 @@ function handleClick(e) {
     }, 300);
   } else if (clickCount === 2) {
     clearTimeout(clickTimer);
+    clickTimer = setTimeout(function() {
+      // Double click (wait a bit to check for triple)
+      if (state === 'collapsed') goToDot();
+      else if (state === 'expanded') goToDot();
+      else if (state === 'dot') goToExpanded();
+      clickCount = 0;
+    }, 300);
+  } else if (clickCount === 3) {
+    clearTimeout(clickTimer);
     clickCount = 0;
-    // Double click
-    if (state === 'collapsed') goToDot();
-    else if (state === 'expanded') goToDot();
-    else if (state === 'dot') goToExpanded();
+    // Triple click — recenter
+    window.island.recenter();
   }
 }
 

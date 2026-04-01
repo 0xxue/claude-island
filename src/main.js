@@ -50,7 +50,7 @@ function createIsland() {
 
 function showWin() {
   if (!win) return;
-  win.setPosition(centerX(), 8);
+  win.setPosition(centerX(), 10);
   win.showInactive();
   win.setAlwaysOnTop(true, 'screen-saver');
 }
@@ -125,6 +125,19 @@ ipcMain.on('dot-island', () => {});
 ipcMain.on('set-clickable', (_, v) => {
   if (!win) return;
   win.setIgnoreMouseEvents(!v, { forward: true });
+});
+
+ipcMain.on('drag-island', (_, dx, dy) => {
+  if (!win) return;
+  const [x, y] = win.getPosition();
+  win.setPosition(x + dx, y + dy);
+});
+
+ipcMain.on('recenter-island', () => {
+  if (!win) return;
+  const { width } = screen.getPrimaryDisplay().workAreaSize;
+  const [w] = win.getSize();
+  win.setPosition(Math.round(width / 2 - w / 2), 10);
 });
 
 app.on('window-all-closed', (e) => e.preventDefault());

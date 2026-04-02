@@ -3,38 +3,52 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Claude Island — Glass + Pet</title>
+<title>Claude Island — Glass + Pixel Pet</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../modules/pet/pixel-pets.css">
 </head>
 <body>
 
-<!-- Pet Selector (top right) -->
+<!-- Pet Selector -->
 <div class="pet-selector" id="pet-selector">
-  <button class="pet-option active" data-pet="octopus" title="Octopus">🐙</button>
-  <button class="pet-option" data-pet="cat" title="Cat">🐱</button>
-  <button class="pet-option" data-pet="dragon" title="Dragon">🐲</button>
-  <button class="pet-option" data-pet="robot" title="Robot">🤖</button>
-  <button class="pet-option" data-pet="ghost" title="Ghost">👻</button>
-  <button class="pet-option" data-pet="crab" title="Crab">🦀</button>
+  <span class="selector-label">Pet:</span>
+  <button class="pet-option active" data-pet="octopus" title="Octopus">
+    <div class="pixel-pet octopus mini"><div class="sprite"></div></div>
+  </button>
+  <button class="pet-option" data-pet="cat" title="Cat">
+    <div class="pixel-pet cat mini"><div class="sprite"></div></div>
+  </button>
+  <button class="pet-option" data-pet="dragon" title="Dragon">
+    <div class="pixel-pet dragon mini"><div class="sprite"></div></div>
+  </button>
+  <button class="pet-option" data-pet="robot" title="Robot">
+    <div class="pixel-pet robot mini"><div class="sprite"></div></div>
+  </button>
+  <button class="pet-option" data-pet="ghost" title="Ghost">
+    <div class="pixel-pet ghost mini"><div class="sprite"></div></div>
+  </button>
+  <button class="pet-option" data-pet="crab" title="Crab">
+    <div class="pixel-pet crab mini"><div class="sprite"></div></div>
+  </button>
 </div>
 
 <div id="island" class="island island-circle">
-  <!-- ═══ Circle: Pet idle ═══ -->
+  <!-- ═══ Circle: Pixel pet sleeping ═══ -->
   <div class="circle-content">
-    <div class="pet-container circle-pet">
-      <span class="pet-emoji" id="circle-pet">🐙</span>
-      <div class="pet-zzz" id="circle-zzz">z<span>z</span><span>z</span></div>
+    <div class="circle-pet-wrap" id="circle-pet-wrap">
+      <div class="pixel-pet octopus" id="circle-pixel-pet"><div class="sprite"></div></div>
     </div>
+    <div class="pet-zzz" id="circle-zzz">z<span>z</span><span>z</span></div>
   </div>
 
-  <!-- ═══ Pill: Pet + status ═══ -->
+  <!-- ═══ Pill: Pixel pet + status ═══ -->
   <header class="pill-content" id="drag-handle">
     <div class="pill-left">
-      <div class="pet-container pill-pet">
-        <span class="pet-emoji" id="pill-pet">🐙</span>
-        <span class="pet-action-icon" id="pill-pet-action"></span>
+      <div class="pill-pet-wrap" id="pill-pet-wrap">
+        <div class="pixel-pet octopus mini" id="pill-pixel-pet"><div class="sprite"></div></div>
       </div>
+      <span class="pet-action-icon" id="pill-pet-action"></span>
       <span class="pill-text" id="pill-text">All Systems Operational</span>
     </div>
     <div class="pill-right">
@@ -47,13 +61,13 @@
     </div>
   </header>
 
-  <!-- ═══ Expanded: Pet + notifications ═══ -->
+  <!-- ═══ Expanded: Pixel pet + notifications ═══ -->
   <main class="expanded-content">
     <div class="exp-pet-bar">
-      <div class="pet-container exp-pet">
-        <span class="pet-emoji" id="exp-pet">🐙</span>
-        <span class="pet-action-icon" id="exp-pet-action"></span>
+      <div class="exp-pet-wrap" id="exp-pet-wrap">
+        <div class="pixel-pet octopus" id="exp-pixel-pet"><div class="sprite"></div></div>
       </div>
+      <span class="pet-action-icon" id="exp-pet-action"></span>
       <div class="pet-speech" id="pet-speech">Ready to help!</div>
     </div>
     <div class="notification-feed" id="notification-feed"></div>

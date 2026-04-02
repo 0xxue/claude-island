@@ -481,3 +481,97 @@ body {
 .footer-link:hover { opacity: 1; }
 
 .island:not(.island-expanded) .expanded-content { display: none; }
+
+/* ═══ Pixel Pet Integration ═══ */
+
+/* Mini size for selector and pill */
+.pixel-pet.mini { transform: scale(0.7); transform-origin: center; }
+
+/* Pet selector styling */
+.selector-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+}
+
+.pet-option {
+  width: 42px;
+  height: 42px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.pet-option:hover { background: var(--glass-hover); }
+.pet-option.active {
+  background: var(--accent-soft);
+  box-shadow: 0 0 8px var(--accent-glow);
+  border-radius: 12px;
+}
+
+/* Circle state pet */
+.circle-pet-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(1.2);
+}
+
+/* Pill state pet */
+.pill-pet-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+.pill-pet-wrap .pixel-pet { transform: scale(0.65); transform-origin: center; }
+
+/* Expanded pet bar */
+.exp-pet-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.exp-pet-wrap .pixel-pet { transform: scale(0.85); transform-origin: center; }
+
+/* Pet action icon */
+.pet-action-icon {
+  font-size: 12px;
+  flex-shrink: 0;
+  min-width: 14px;
+}
+
+/* Pet zzz in circle */
+.pet-zzz {
+  position: absolute;
+  top: 4px;
+  right: 2px;
+  font-size: 10px;
+  color: var(--accent);
+  font-weight: 700;
+  opacity: 0.6;
+}
+
+.pet-zzz span:nth-child(1) { animation: zzz 2s ease-in-out infinite 0.3s; font-size: 8px; }
+.pet-zzz span:nth-child(2) { animation: zzz 2s ease-in-out infinite 0.6s; font-size: 7px; }
+
+@keyframes zzz {
+  0%, 100% { opacity: 0.3; transform: translateY(0); }
+  50% { opacity: 0.8; transform: translateY(-3px); }
+}

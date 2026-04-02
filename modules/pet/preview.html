@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pixel Pets Preview</title>
+<link rel="stylesheet" href="pixel-pets.css">
+<style>
+  body { background: #0F172A; color: #F1F5F9; font-family: system-ui; padding: 40px; }
+  h1 { margin-bottom: 20px; }
+  .grid { display: flex; flex-wrap: wrap; gap: 32px; }
+  .pet-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    min-width: 120px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .pet-card:hover { border-color: rgba(99,102,241,0.3); background: rgba(99,102,241,0.05); }
+  .pet-card .name { font-size: 14px; font-weight: 600; }
+  .pet-card .pixel-pet { margin: 8px 0; }
+
+  .states { margin-top: 40px; }
+  .state-row { display: flex; gap: 24px; align-items: center; margin: 16px 0; }
+  .state-label { width: 80px; font-size: 12px; color: #64748B; }
+</style>
+</head>
+<body>
+  <h1>🎮 Pixel Pets</h1>
+
+  <div class="grid">
+    <div class="pet-card">
+      <div class="pixel-pet octopus"><div class="sprite"></div></div>
+      <span class="name">Octopus</span>
+    </div>
+    <div class="pet-card">
+      <div class="pixel-pet cat"><div class="sprite"></div></div>
+      <span class="name">Cat</span>
+    </div>
+    <div class="pet-card">
+      <div class="pixel-pet dragon"><div class="sprite"></div></div>
+      <span class="name">Dragon</span>
+    </div>
+    <div class="pet-card">
+      <div class="pixel-pet robot"><div class="sprite"></div></div>
+      <span class="name">Robot</span>
+    </div>
+    <div class="pet-card">
+      <div class="pixel-pet ghost"><div class="sprite"></div></div>
+      <span class="name">Ghost</span>
+    </div>
+    <div class="pet-card">
+      <div class="pixel-pet crab"><div class="sprite"></div></div>
+      <span class="name">Crab</span>
+    </div>
+  </div>
+
+  <div class="states">
+    <h2>Animation States</h2>
+    <div class="state-row">
+      <span class="state-label">Idle</span>
+      <div class="pixel-pet octopus"><div class="sprite"></div></div>
+      <div class="pixel-pet cat"><div class="sprite"></div></div>
+      <div class="pixel-pet dragon"><div class="sprite"></div></div>
+    </div>
+    <div class="state-row">
+      <span class="state-label">Working</span>
+      <div class="pixel-pet octopus state-working"><div class="sprite"></div></div>
+      <div class="pixel-pet cat state-working"><div class="sprite"></div></div>
+      <div class="pixel-pet dragon state-working"><div class="sprite"></div></div>
+    </div>
+    <div class="state-row">
+      <span class="state-label">Alert</span>
+      <div class="pixel-pet octopus state-alert"><div class="sprite"></div></div>
+      <div class="pixel-pet cat state-alert"><div class="sprite"></div></div>
+      <div class="pixel-pet dragon state-alert"><div class="sprite"></div></div>
+    </div>
+    <div class="state-row">
+      <span class="state-label">Happy</span>
+      <div class="pixel-pet octopus state-happy"><div class="sprite"></div></div>
+      <div class="pixel-pet cat state-happy"><div class="sprite"></div></div>
+      <div class="pixel-pet dragon state-happy"><div class="sprite"></div></div>
+    </div>
+    <div class="state-row">
+      <span class="state-label">Error</span>
+      <div class="pixel-pet octopus state-error"><div class="sprite"></div></div>
+      <div class="pixel-pet cat state-error"><div class="sprite"></div></div>
+      <div class="pixel-pet dragon state-error"><div class="sprite"></div></div>
+    </div>
+  </div>
+</body>
+</html>

@@ -100,7 +100,7 @@ var isDragging = false, wasDragging = false;
 var xOffset = 0, yOffset = 0, initialX, initialY, currentX, currentY;
 
 dragHandle.addEventListener('mousedown', function(e) {
-  if (e.target.closest('.btn') || e.target.closest('.footer-link')) return;
+  if (e.target.closest('.btn') || e.target.closest('.sound-toggle') || e.target.closest('.settings-btn') || e.target.closest('.footer-link') || e.target.closest('.settings-popup')) return;
   initialX = e.clientX - xOffset;
   initialY = e.clientY - yOffset;
   if (e.target === dragHandle || dragHandle.contains(e.target)) {
@@ -154,7 +154,7 @@ var clickTimeout, clickCount = 0;
 
 dragHandle.addEventListener('click', function(e) {
   if (wasDragging) return;
-  if (e.target.closest('.btn') || e.target.closest('.footer-link') || e.target.closest('.pet-option')) return;
+  if (e.target.closest('.btn') || e.target.closest('.sound-toggle') || e.target.closest('.settings-btn') || e.target.closest('.footer-link') || e.target.closest('.pet-option') || e.target.closest('.settings-popup')) return;
   clickCount++;
   if (clickCount === 1) {
     clickTimeout = setTimeout(function() {

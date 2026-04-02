@@ -128,7 +128,7 @@ new ResizeObserver(function() { if (state === 'expanded') updateHeight(); }).obs
 var clickCount = 0, clickTimer = null, wasDragging = false;
 
 island.addEventListener('click', function(e) {
-  if (e.target.closest('.btn') || e.target.closest('.footer-link') || e.target.closest('.pet-option')) return;
+  if (e.target.closest('.btn') || e.target.closest('.icon-btn') || e.target.closest('.footer-link') || e.target.closest('.pet-option') || e.target.closest('.settings-popup')) return;
   if (wasDragging) return;
   if (Date.now() - stateTime < 400) return;
   clickCount++;
@@ -153,7 +153,7 @@ island.addEventListener('click', function(e) {
 var isDragging = false, offX = 0, offY = 0, initDX = 0, initDY = 0;
 
 dragHandle.addEventListener('mousedown', function(e) {
-  if (e.target.closest('.btn') || e.target.closest('.footer-link')) return;
+  if (e.target.closest('.btn') || e.target.closest('.icon-btn') || e.target.closest('.footer-link') || e.target.closest('.settings-popup')) return;
   isDragging = true;
   wasDragging = false;
   initDX = e.clientX - offX;

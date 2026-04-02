@@ -403,6 +403,22 @@ body {
   display: inline-block;
 }
 
+.btn-jump {
+  width: 24px; height: 24px;
+  border: 1px solid var(--glass-border);
+  background: transparent;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-dim);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.btn-jump:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.btn-jump:active { transform: scale(0.9); }
+
 .action-badge {
   font-size: 10px;
   font-weight: 600;

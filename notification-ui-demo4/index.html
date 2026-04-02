@@ -10,31 +10,6 @@
 </head>
 <body>
 
-<!-- Settings Bar -->
-<div class="pet-selector" id="pet-selector">
-  <button class="sound-toggle" id="sound-toggle" title="Toggle Sound">🔊</button>
-  <div class="divider"></div>
-  <span class="selector-label">Pet:</span>
-  <button class="pet-option active" data-pet="octopus" title="Octopus">
-    <div class="pixel-pet octopus mini"><div class="sprite"></div></div>
-  </button>
-  <button class="pet-option" data-pet="cat" title="Cat">
-    <div class="pixel-pet cat mini"><div class="sprite"></div></div>
-  </button>
-  <button class="pet-option" data-pet="dragon" title="Dragon">
-    <div class="pixel-pet dragon mini"><div class="sprite"></div></div>
-  </button>
-  <button class="pet-option" data-pet="robot" title="Robot">
-    <div class="pixel-pet robot mini"><div class="sprite"></div></div>
-  </button>
-  <button class="pet-option" data-pet="ghost" title="Ghost">
-    <div class="pixel-pet ghost mini"><div class="sprite"></div></div>
-  </button>
-  <button class="pet-option" data-pet="crab" title="Crab">
-    <div class="pixel-pet crab mini"><div class="sprite"></div></div>
-  </button>
-</div>
-
 <div id="island" class="island island-circle">
   <!-- ═══ Circle: Pixel pet sleeping ═══ -->
   <div class="circle-content">
@@ -58,7 +33,24 @@
         <span></span><span></span><span></span>
       </div>
       <div class="pill-icons">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+        <button class="icon-btn" id="sound-toggle" title="Sound">🔊</button>
+        <button class="icon-btn" id="settings-btn" title="Settings">⚙</button>
+      </div>
+    </div>
+
+    <!-- Settings Popup -->
+    <div class="settings-popup" id="settings-popup" style="display:none;">
+      <div class="popup-title">Settings</div>
+      <div class="popup-section">
+        <span class="popup-label">Choose Pet</span>
+        <div class="popup-pets">
+          <button class="pet-option active" data-pet="octopus"><div class="pixel-pet octopus mini"><div class="sprite"></div></div></button>
+          <button class="pet-option" data-pet="cat"><div class="pixel-pet cat mini"><div class="sprite"></div></div></button>
+          <button class="pet-option" data-pet="dragon"><div class="pixel-pet dragon mini"><div class="sprite"></div></div></button>
+          <button class="pet-option" data-pet="robot"><div class="pixel-pet robot mini"><div class="sprite"></div></div></button>
+          <button class="pet-option" data-pet="ghost"><div class="pixel-pet ghost mini"><div class="sprite"></div></div></button>
+          <button class="pet-option" data-pet="crab"><div class="pixel-pet crab mini"><div class="sprite"></div></div></button>
+        </div>
       </div>
     </div>
   </header>

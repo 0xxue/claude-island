@@ -159,6 +159,7 @@ document.addEventListener('mouseup', function() {
 // ═══ Notifications ═══
 var notifCount = 0, pendingAgents = new Set();
 var AGENT_COLORS = { Claude: 'var(--claude-color)', Codex: 'var(--codex-color)', Gemini: 'var(--gemini-color)', Cursor: 'var(--cursor-color)' };
+var AGENT_PETS = { Claude: 'crab', Codex: 'robot', Gemini: 'dragon', Cursor: 'ghost' };
 
 var mockMessages = [
   { agent: 'Claude', text: 'Requests to patch routing middleware.<br><span class="user-msg">You: Fix the CORS headers</span>', actionType: 'modify', eventType: 'permission', tool: 'Edit', code: { file: 'api.js', tag: 'diff', lines: [{ type: 'del', text: '- res.header("Access-Control-Allow-Origin", "*");' }, { type: 'add', text: '+ res.header("Access-Control-Allow-Origin", "https://app.example.com");' }] }, needsAction: true },
@@ -190,7 +191,8 @@ function createNotification(data) {
   card.className = 'notif-card';
   card.dataset.agent = data.agent;
   var color = AGENT_COLORS[data.agent] || 'var(--accent)';
-  var h = '<div class="notif-header"><span class="agent-badge"><span class="dot" style="background:' + color + '"></span> ' + data.agent + '</span>';
+  var agentPet = AGENT_PETS[data.agent] || 'octopus';
+  var h = '<div class="notif-header"><span class="agent-badge"><span class="agent-pet-icon"><div class="pixel-pet ' + agentPet + ' tiny"><div class="sprite"></div></div></span> ' + data.agent + '</span>';
   if (data.actionType) h += '<span class="action-badge ' + data.actionType + '">' + data.actionType.charAt(0).toUpperCase() + data.actionType.slice(1) + '</span>';
   h += '</div><div class="notif-body">' + data.text + '</div>';
   if (data.code) {

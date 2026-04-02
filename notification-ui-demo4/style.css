@@ -486,6 +486,17 @@ body {
 
 /* Mini size for selector and pill */
 .pixel-pet.mini { transform: scale(0.7); transform-origin: center; }
+.pixel-pet.tiny { transform: scale(0.4); transform-origin: top left; }
+
+.agent-pet-icon {
+  display: inline-block;
+  width: 16px;
+  height: 14px;
+  vertical-align: middle;
+  overflow: visible;
+  position: relative;
+  flex-shrink: 0;
+}
 
 /* Pet selector styling */
 .sound-toggle {

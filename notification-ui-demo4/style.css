@@ -53,9 +53,10 @@ body {
 
 /* ═══ Settings Popup ═══ */
 .settings-popup {
-  position: absolute;
-  top: 48px;
-  right: 8px;
+  position: fixed;
+  top: 68px;
+  left: 50%;
+  transform: translateX(-30%);
   background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
@@ -194,7 +195,7 @@ body {
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
   border: 1px solid var(--glass-border);
-  overflow: visible;
+  overflow: hidden;
   cursor: pointer;
   box-shadow: 0 24px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
   transition: all 0.45s var(--ease);

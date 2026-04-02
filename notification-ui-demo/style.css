@@ -42,7 +42,7 @@ body {
     display: flex;
     flex-direction: column;
     box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05);
-    overflow: hidden;
+    overflow: visible;
     transition: width 0.3s var(--transition-snappy), 
                 height 0.3s var(--transition-snappy),
                 border-radius 0.3s var(--transition-snappy),

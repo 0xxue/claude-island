@@ -64,6 +64,25 @@ soundBtn.addEventListener('click', function(e) {
   if (on) sound.play('click');
 });
 
+// ═══ Settings Popup ═══
+var settingsBtn = document.getElementById('settings-btn');
+var settingsPopup = document.getElementById('settings-popup');
+var popupOpen = false;
+
+settingsBtn.addEventListener('click', function(e) {
+  e.stopPropagation();
+  popupOpen = !popupOpen;
+  settingsPopup.style.display = popupOpen ? 'block' : 'none';
+});
+
+// Close popup when clicking outside
+document.addEventListener('click', function(e) {
+  if (popupOpen && !settingsPopup.contains(e.target) && e.target !== settingsBtn) {
+    popupOpen = false;
+    settingsPopup.style.display = 'none';
+  }
+});
+
 // ═══ Pet Selector ═══
 document.querySelectorAll('.pet-option').forEach(function(btn) {
   btn.addEventListener('click', function(e) {

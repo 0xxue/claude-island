@@ -342,44 +342,65 @@ body {
     color: #aaa;
 }
 
-/* ═══ Settings Bar ═══ */
-.settings-bar {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    gap: 4px;
-    align-items: center;
-    background: var(--surface);
-    border: 1px solid var(--surface-border);
-    border-radius: 14px;
-    padding: 4px 6px;
-    z-index: 10000;
-}
-
-.sound-toggle {
-    width: 30px; height: 30px;
+/* ═══ In-island Controls ═══ */
+.sound-toggle, .settings-btn {
+    width: 26px; height: 26px;
     border: none; background: transparent;
-    border-radius: 8px; font-size: 15px;
+    border-radius: 6px; font-size: 13px;
     cursor: pointer; transition: all 0.2s;
     display: flex; align-items: center; justify-content: center;
-    opacity: 0.8;
+    color: var(--text-secondary);
 }
-.sound-toggle:hover { background: #1a1a1a; opacity: 1; }
+.sound-toggle:hover, .settings-btn:hover { background: #1a1a1a; color: #fff; }
 .sound-toggle.muted { opacity: 0.3; }
 
-.bar-divider { width: 1px; height: 18px; background: var(--surface-border); margin: 0 2px; }
-.bar-label { font-size: 10px; color: #555; padding: 0 2px; }
+/* ═══ Settings Popup ═══ */
+.settings-popup {
+    position: absolute;
+    top: 48px;
+    right: 8px;
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 14px;
+    padding: 12px;
+    z-index: 100;
+    min-width: 200px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    animation: popupIn 0.25s var(--transition-snappy);
+}
+
+@keyframes popupIn {
+    from { opacity: 0; transform: translateY(-6px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.popup-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+
+.popup-section { margin-bottom: 8px; }
+.popup-label { font-size: 0.75rem; color: #666; display: block; margin-bottom: 6px; }
+
+.popup-pets {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
 
 .pet-option {
-    width: 36px; height: 36px;
+    width: 34px; height: 34px;
     border: none; background: transparent;
     border-radius: 8px; cursor: pointer;
     transition: all 0.2s;
     display: flex; align-items: center; justify-content: center;
 }
 .pet-option:hover { background: #1a1a1a; }
-.pet-option.active { background: rgba(234,88,12,0.12); box-shadow: 0 0 6px rgba(234,88,12,0.2); }
+.pet-option.active { background: rgba(234,88,12,0.15); box-shadow: 0 0 6px rgba(234,88,12,0.2); }
 
 /* ═══ Pixel Pet in Island ═══ */
 .pixel-pet.mini { transform: scale(0.65); transform-origin: center; }

@@ -12,19 +12,6 @@
 </head>
 <body>
 
-    <!-- Settings Bar -->
-    <div class="settings-bar" id="settings-bar">
-      <button class="sound-toggle" id="sound-toggle" title="Toggle Sound">🔊</button>
-      <div class="bar-divider"></div>
-      <span class="bar-label">Pet:</span>
-      <button class="pet-option active" data-pet="octopus" title="Octopus"><div class="pixel-pet octopus mini"><div class="sprite"></div></div></button>
-      <button class="pet-option" data-pet="cat" title="Cat"><div class="pixel-pet cat mini"><div class="sprite"></div></div></button>
-      <button class="pet-option" data-pet="dragon" title="Dragon"><div class="pixel-pet dragon mini"><div class="sprite"></div></div></button>
-      <button class="pet-option" data-pet="robot" title="Robot"><div class="pixel-pet robot mini"><div class="sprite"></div></div></button>
-      <button class="pet-option" data-pet="ghost" title="Ghost"><div class="pixel-pet ghost mini"><div class="sprite"></div></div></button>
-      <button class="pet-option" data-pet="crab" title="Crab"><div class="pixel-pet crab mini"><div class="sprite"></div></div></button>
-    </div>
-
     <div id="dynamic-island" class="island-circle">
         <header class="island-header" id="drag-handle">
             <!-- Pixel Pet (circle state) -->
@@ -44,8 +31,24 @@
             </div>
 
             <div class="status-icon-group" id="status-icons">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 3a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <button class="sound-toggle" id="sound-toggle" title="Toggle Sound">🔊</button>
+                <button class="settings-btn" id="settings-btn" title="Settings">⚙</button>
+            </div>
+
+            <!-- Settings Popup (inside island) -->
+            <div class="settings-popup" id="settings-popup" style="display:none;">
+              <div class="popup-title">Settings</div>
+              <div class="popup-section">
+                <span class="popup-label">Pet</span>
+                <div class="popup-pets">
+                  <button class="pet-option active" data-pet="octopus"><div class="pixel-pet octopus mini"><div class="sprite"></div></div></button>
+                  <button class="pet-option" data-pet="cat"><div class="pixel-pet cat mini"><div class="sprite"></div></div></button>
+                  <button class="pet-option" data-pet="dragon"><div class="pixel-pet dragon mini"><div class="sprite"></div></div></button>
+                  <button class="pet-option" data-pet="robot"><div class="pixel-pet robot mini"><div class="sprite"></div></div></button>
+                  <button class="pet-option" data-pet="ghost"><div class="pixel-pet ghost mini"><div class="sprite"></div></div></button>
+                  <button class="pet-option" data-pet="crab"><div class="pixel-pet crab mini"><div class="sprite"></div></div></button>
+                </div>
+              </div>
             </div>
         </header>
 

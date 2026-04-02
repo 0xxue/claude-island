@@ -57,6 +57,17 @@ function updatePetState(eventType, toolName) {
   zzz.style.display = (petState === 'idle' || petState === 'sleeping') ? 'block' : 'none';
 }
 
+// Sound Toggle
+var soundBtn = document.getElementById('sound-toggle');
+soundBtn.addEventListener('click', function(e) {
+  e.stopPropagation();
+  var on = !sound.enabled;
+  sound.setEnabled(on);
+  soundBtn.textContent = on ? '🔊' : '🔇';
+  soundBtn.classList.toggle('muted', !on);
+  if (on) sound.play('click');
+});
+
 // Pet Selector
 document.querySelectorAll('.pet-option').forEach(function(btn) {
   btn.addEventListener('click', function(e) {

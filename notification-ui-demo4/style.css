@@ -488,6 +488,31 @@ body {
 .pixel-pet.mini { transform: scale(0.7); transform-origin: center; }
 
 /* Pet selector styling */
+.sound-toggle {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+}
+
+.sound-toggle:hover { background: var(--glass-hover); opacity: 1; }
+.sound-toggle.muted { opacity: 0.3; }
+
+.divider {
+  width: 1px;
+  height: 20px;
+  background: var(--glass-border);
+  margin: 0 2px;
+}
+
 .selector-label {
   font-size: 11px;
   color: var(--text-dim);

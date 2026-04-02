@@ -9,7 +9,6 @@
   --amber: #FBBF24;
   --amber-soft: rgba(251, 191, 36, 0.12);
   --blue: #60A5FA;
-  --blue-soft: rgba(96, 165, 250, 0.12);
   --glass: rgba(255, 255, 255, 0.04);
   --glass-border: rgba(255, 255, 255, 0.07);
   --glass-hover: rgba(255, 255, 255, 0.08);
@@ -21,8 +20,6 @@
   --font: 'Inter', system-ui, sans-serif;
   --mono: 'JetBrains Mono', monospace;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-
-  /* Agent colors */
   --claude-color: #D97757;
   --codex-color: #60A5FA;
   --gemini-color: #34D399;
@@ -42,9 +39,130 @@ body {
   overflow: hidden;
 }
 
-/* ═══════════════════════════════════
-   Island Container
-═══════════════════════════════════ */
+/* ═══ Pet Selector ═══ */
+.pet-selector {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 4px;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 4px;
+  z-index: 10000;
+}
+
+.pet-option {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pet-option:hover { background: var(--glass-hover); }
+.pet-option.active { background: var(--accent-soft); box-shadow: 0 0 8px var(--accent-glow); }
+
+/* ═══ Pet Container ═══ */
+.pet-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pet-emoji {
+  font-size: 24px;
+  line-height: 1;
+  transition: transform 0.3s var(--ease);
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.pet-action-icon {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  font-size: 10px;
+  animation: action-bounce 0.5s var(--ease);
+}
+
+@keyframes action-bounce {
+  0% { transform: scale(0) translateY(4px); }
+  60% { transform: scale(1.3) translateY(-2px); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+/* Pet ZZZ (sleeping in circle) */
+.pet-zzz {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 10px;
+  color: var(--accent);
+  font-weight: 700;
+  opacity: 0.6;
+}
+
+.pet-zzz span:nth-child(1) {
+  animation: zzz 2s ease-in-out infinite 0.3s;
+  font-size: 8px;
+}
+
+.pet-zzz span:nth-child(2) {
+  animation: zzz 2s ease-in-out infinite 0.6s;
+  font-size: 7px;
+}
+
+@keyframes zzz {
+  0%, 100% { opacity: 0.3; transform: translateY(0); }
+  50% { opacity: 0.8; transform: translateY(-3px); }
+}
+
+/* Pet states */
+.pet-emoji.idle { animation: pet-idle 3s ease-in-out infinite; }
+.pet-emoji.working { animation: pet-work 0.4s ease-in-out infinite; }
+.pet-emoji.alert { animation: pet-alert 0.6s ease-in-out infinite; }
+.pet-emoji.happy { animation: pet-happy 0.5s ease-in-out 3; }
+.pet-emoji.error { animation: pet-error 0.3s ease-in-out 3; }
+
+@keyframes pet-idle {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-2px) rotate(2deg); }
+}
+
+@keyframes pet-work {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-1px) rotate(-3deg); }
+  75% { transform: translateY(-1px) rotate(3deg); }
+}
+
+@keyframes pet-alert {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.1); }
+}
+
+@keyframes pet-happy {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-6px) rotate(-10deg); }
+  75% { transform: translateY(-6px) rotate(10deg); }
+}
+
+@keyframes pet-error {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+/* ═══ Island Container ═══ */
 .island {
   position: fixed;
   top: 20px;
@@ -56,19 +174,16 @@ body {
   border: 1px solid var(--glass-border);
   overflow: hidden;
   cursor: pointer;
-  box-shadow:
-    0 24px 48px rgba(0,0,0,0.4),
-    0 0 1px rgba(99,102,241,0.1),
-    inset 0 1px 0 rgba(255,255,255,0.04);
+  box-shadow: 0 24px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
   transition: all 0.45s var(--ease);
   z-index: 9999;
   will-change: width, height, border-radius;
 }
 
-/* ═══ Circle State ═══ */
+/* ═══ Circle ═══ */
 .island.island-circle {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: rgba(99, 102, 241, 0.06);
   border-color: rgba(99, 102, 241, 0.15);
@@ -78,7 +193,6 @@ body {
 .island.island-circle .expanded-content { display: none; }
 
 .circle-content {
-  position: relative;
   width: 100%;
   height: 100%;
   display: flex;
@@ -86,39 +200,15 @@ body {
   justify-content: center;
 }
 
-.orbit {
-  position: absolute;
-  inset: 5px;
-  border-radius: 50%;
-  border: 1.5px solid transparent;
-  border-top-color: var(--accent);
-  border-right-color: rgba(99,102,241,0.2);
-  animation: orbit-spin 3s linear infinite;
-}
-
-@keyframes orbit-spin { to { transform: rotate(360deg); } }
-
-.core {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 12px var(--accent-glow);
-  animation: core-breathe 2.5s ease-in-out infinite;
-}
-
-@keyframes core-breathe {
-  0%, 100% { transform: scale(1); opacity: 0.7; }
-  50% { transform: scale(1.2); opacity: 1; }
-}
+.circle-pet .pet-emoji { font-size: 28px; animation: pet-idle 3s ease-in-out infinite; }
 
 .island:not(.island-circle) .circle-content { display: none; }
 
-/* ═══ Pill State ═══ */
+/* ═══ Pill ═══ */
 .island.island-pill {
   width: 440px;
-  height: 42px;
-  border-radius: 21px;
+  height: 44px;
+  border-radius: 22px;
 }
 
 .island.island-pill .expanded-content { display: none; }
@@ -127,8 +217,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 42px;
-  padding: 0 14px;
+  height: 44px;
+  padding: 0 12px;
   cursor: grab;
   user-select: none;
   width: 100%;
@@ -136,37 +226,10 @@ body {
 
 .pill-content:active { cursor: grabbing; }
 
-.pill-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  overflow: hidden;
-}
+.pill-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
 
-.pill-indicator {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--text-dim);
-  flex-shrink: 0;
-  transition: all 0.3s;
-}
-
-.pill-indicator.active {
-  background: var(--accent);
-  box-shadow: 0 0 8px var(--accent-glow);
-}
-
-.pill-indicator.warn {
-  background: var(--amber);
-  box-shadow: 0 0 8px rgba(251,191,36,0.3);
-  animation: pulse-dot 2s infinite;
-}
-
-@keyframes pulse-dot {
-  0%, 100% { box-shadow: 0 0 4px rgba(251,191,36,0.2); }
-  50% { box-shadow: 0 0 12px rgba(251,191,36,0.4); }
-}
+.pill-pet { width: 30px; height: 30px; }
+.pill-pet .pet-emoji { font-size: 22px; }
 
 .pill-text {
   font-size: 12.5px;
@@ -177,27 +240,14 @@ body {
   text-overflow: ellipsis;
 }
 
-.pill-text .highlight {
-  color: var(--accent);
-  font-weight: 600;
-}
+.pill-text .highlight { color: var(--accent); font-weight: 600; }
 
-.pill-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-}
+.pill-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 
-.pill-wave {
-  display: flex;
-  gap: 2px;
-  align-items: center;
-}
+.pill-wave { display: flex; gap: 2px; align-items: center; }
 
 .pill-wave span {
-  width: 3px;
-  height: 10px;
+  width: 3px; height: 10px;
   background: var(--accent);
   border-radius: 2px;
   animation: wave 1.2s ease-in-out infinite;
@@ -214,15 +264,11 @@ body {
   50% { transform: scaleY(1); opacity: 1; }
 }
 
-.pill-icons {
-  display: flex;
-  gap: 8px;
-  color: var(--text-dim);
-}
+.pill-icons { display: flex; gap: 8px; color: var(--text-dim); }
 
 .island:not(.island-pill) .pill-content { display: none; }
 
-/* ═══ Expanded State ═══ */
+/* ═══ Expanded ═══ */
 .island.island-expanded {
   width: 460px;
   border-radius: 20px;
@@ -243,14 +289,52 @@ body {
   transition-delay: 0.1s;
 }
 
+/* Pet bar in expanded */
+.exp-pet-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.exp-pet { width: 32px; height: 32px; }
+.exp-pet .pet-emoji { font-size: 24px; }
+
+.pet-speech {
+  font-size: 12px;
+  color: var(--text-mid);
+  padding: 4px 10px;
+  background: var(--glass);
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  position: relative;
+  animation: speech-in 0.3s var(--ease);
+}
+
+.pet-speech::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: var(--glass-border);
+}
+
+@keyframes speech-in {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
 /* ═══ Notification Feed ═══ */
 .notification-feed {
-  padding: 4px 14px;
+  padding: 8px 14px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-height: 400px;
+  gap: 10px;
+  max-height: 380px;
   scrollbar-width: none;
 }
 
@@ -266,15 +350,11 @@ body {
   border: 1px solid var(--glass-border);
   border-radius: 14px;
   animation: card-in 0.35s var(--ease) forwards;
-  position: relative;
   transition: border-color 0.2s;
 }
 
 .notif-card:hover { border-color: rgba(255,255,255,0.12); }
-
-.notif-card.card-out {
-  animation: card-out 0.3s var(--ease) forwards !important;
-}
+.notif-card.card-out { animation: card-out 0.3s var(--ease) forwards !important; }
 
 @keyframes card-in {
   0% { opacity: 0; transform: translateY(-8px) scale(0.98); }
@@ -286,13 +366,7 @@ body {
   100% { opacity: 0; transform: scale(0.95); height: 0; padding: 0; margin: 0; border: none; overflow: hidden; }
 }
 
-/* Card: Agent Header */
-.notif-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-}
+.notif-header { display: flex; align-items: center; gap: 8px; font-size: 12px; }
 
 .agent-badge {
   font-weight: 600;
@@ -302,8 +376,7 @@ body {
 }
 
 .agent-badge .dot {
-  width: 6px;
-  height: 6px;
+  width: 6px; height: 6px;
   border-radius: 50%;
   display: inline-block;
 }
@@ -321,16 +394,9 @@ body {
 .action-badge.modify { color: var(--accent); background: var(--accent-soft); }
 .action-badge.info { color: var(--green); background: var(--green-soft); }
 
-/* Card: Body */
-.notif-body {
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--text-mid);
-}
-
+.notif-body { font-size: 12px; line-height: 1.5; color: var(--text-mid); }
 .notif-body .user-msg { color: var(--text-dim); font-style: italic; }
 
-/* Card: Code Block */
 .notif-code {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255,255,255,0.04);
@@ -362,11 +428,7 @@ body {
 .code-line.del { color: var(--red); opacity: 0.6; }
 .code-line.normal { color: var(--text-mid); }
 
-/* Card: Action Buttons */
-.notif-actions {
-  display: flex;
-  gap: 6px;
-}
+.notif-actions { display: flex; gap: 6px; }
 
 .btn {
   flex: 1;
@@ -389,10 +451,7 @@ body {
 }
 .btn-deny:hover { border-color: rgba(248,113,113,0.3); color: var(--red); }
 
-.btn-once {
-  background: var(--glass-strong);
-  color: var(--text);
-}
+.btn-once { background: var(--glass-strong); color: var(--text); }
 .btn-once:hover { background: rgba(255,255,255,0.14); }
 
 .btn-all {
@@ -409,7 +468,6 @@ body {
 }
 .btn-bypass:hover { background: rgba(248, 113, 113, 0.2); }
 
-/* Footer */
 .island-footer {
   display: flex;
   justify-content: space-between;
@@ -419,12 +477,7 @@ body {
   border-top: 1px solid var(--glass-border);
 }
 
-.footer-link {
-  color: var(--accent);
-  cursor: pointer;
-  opacity: 0.6;
-  transition: opacity 0.2s;
-}
+.footer-link { color: var(--accent); cursor: pointer; opacity: 0.6; transition: opacity 0.2s; }
 .footer-link:hover { opacity: 1; }
 
 .island:not(.island-expanded) .expanded-content { display: none; }

@@ -3,23 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Claude Island — Glass</title>
+<title>Claude Island — Glass + Pet</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+<!-- Pet Selector (top right) -->
+<div class="pet-selector" id="pet-selector">
+  <button class="pet-option active" data-pet="octopus" title="Octopus">🐙</button>
+  <button class="pet-option" data-pet="cat" title="Cat">🐱</button>
+  <button class="pet-option" data-pet="dragon" title="Dragon">🐲</button>
+  <button class="pet-option" data-pet="robot" title="Robot">🤖</button>
+  <button class="pet-option" data-pet="ghost" title="Ghost">👻</button>
+  <button class="pet-option" data-pet="crab" title="Crab">🦀</button>
+</div>
+
 <div id="island" class="island island-circle">
-  <!-- ═══ Circle: orbital core ═══ -->
+  <!-- ═══ Circle: Pet idle ═══ -->
   <div class="circle-content">
-    <div class="orbit"></div>
-    <div class="core"></div>
+    <div class="pet-container circle-pet">
+      <span class="pet-emoji" id="circle-pet">🐙</span>
+      <div class="pet-zzz" id="circle-zzz">z<span>z</span><span>z</span></div>
+    </div>
   </div>
 
-  <!-- ═══ Pill: compact status ═══ -->
+  <!-- ═══ Pill: Pet + status ═══ -->
   <header class="pill-content" id="drag-handle">
     <div class="pill-left">
-      <div class="pill-indicator active" id="pill-dot"></div>
+      <div class="pet-container pill-pet">
+        <span class="pet-emoji" id="pill-pet">🐙</span>
+        <span class="pet-action-icon" id="pill-pet-action"></span>
+      </div>
       <span class="pill-text" id="pill-text">All Systems Operational</span>
     </div>
     <div class="pill-right">
@@ -28,13 +43,19 @@
       </div>
       <div class="pill-icons">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 9 1.65 1.65 0 0 0 3.09 8H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 3a1.65 1.65 0 0 0-.33-1.82V1.12a2 2 0 0 1 2.83 0l.06.06c.5.5 1.2.74 1.82.33H9a1.65 1.65 0 0 0 1-1.51V0h4v.09a1.65 1.65 0 0 0 1 1.51c.63.41 1.32.17 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 6c.41.63.74 1.32.33 1.82l.06.06V9h.09A1.65 1.65 0 0 0 21 10.09V14h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
       </div>
     </div>
   </header>
 
-  <!-- ═══ Expanded: notification feed ═══ -->
+  <!-- ═══ Expanded: Pet + notifications ═══ -->
   <main class="expanded-content">
+    <div class="exp-pet-bar">
+      <div class="pet-container exp-pet">
+        <span class="pet-emoji" id="exp-pet">🐙</span>
+        <span class="pet-action-icon" id="exp-pet-action"></span>
+      </div>
+      <div class="pet-speech" id="pet-speech">Ready to help!</div>
+    </div>
     <div class="notification-feed" id="notification-feed"></div>
     <div class="island-footer">
       <span class="footer-stat" id="footer-stat">0 agents</span>

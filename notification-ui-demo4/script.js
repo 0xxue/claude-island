@@ -212,7 +212,7 @@ function createNotification(data) {
   var agentPet = AGENT_PETS[data.agent] || 'octopus';
   var h = '<div class="notif-header"><span class="agent-badge"><span class="agent-pet-icon"><div class="pixel-pet ' + agentPet + ' tiny"><div class="sprite"></div></div></span> ' + data.agent + '</span>';
   if (data.actionType) h += '<span class="action-badge ' + data.actionType + '">' + data.actionType.charAt(0).toUpperCase() + data.actionType.slice(1) + '</span>';
-  h += '<button class="btn-jump jump-btn" title="Jump to ' + data.agent + '">↗</button>';
+  h += '<button class="btn-jump jump-btn" title="Jump to ' + data.agent + '">Jump ↗</button>';
   h += '</div><div class="notif-body">' + data.text + '</div>';
   if (data.code) {
     h += '<div class="notif-code"><div class="code-header"><span class="code-filename">' + data.code.file + '</span>';

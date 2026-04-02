@@ -212,7 +212,7 @@ function createNotification(data) {
 
   var html = '<div class="notif-header">';
   html += '<span class="agent-badge" style="color: var(--' + data.agent.toLowerCase() + '-color)"><span class="agent-pet-icon"><div class="pixel-pet ' + agentPet + ' tiny"><div class="sprite"></div></div></span> ' + data.agent + '</span>';
-  html += '<button class="btn-jump jump-btn" title="Jump to ' + data.agent + '">↗</button>';
+  html += '<button class="btn-jump jump-btn" title="Jump to ' + data.agent + '">Jump ↗</button>';
   html += '</div>';
   html += '<div class="notif-body">' + data.text + '</div>';
 

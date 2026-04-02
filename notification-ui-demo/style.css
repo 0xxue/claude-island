@@ -341,3 +341,126 @@ body {
 .island-footer span:hover {
     color: #aaa;
 }
+
+/* ═══ Settings Bar ═══ */
+.settings-bar {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: 14px;
+    padding: 4px 6px;
+    z-index: 10000;
+}
+
+.sound-toggle {
+    width: 30px; height: 30px;
+    border: none; background: transparent;
+    border-radius: 8px; font-size: 15px;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0.8;
+}
+.sound-toggle:hover { background: #1a1a1a; opacity: 1; }
+.sound-toggle.muted { opacity: 0.3; }
+
+.bar-divider { width: 1px; height: 18px; background: var(--surface-border); margin: 0 2px; }
+.bar-label { font-size: 10px; color: #555; padding: 0 2px; }
+
+.pet-option {
+    width: 36px; height: 36px;
+    border: none; background: transparent;
+    border-radius: 8px; cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+}
+.pet-option:hover { background: #1a1a1a; }
+.pet-option.active { background: rgba(234,88,12,0.12); box-shadow: 0 0 6px rgba(234,88,12,0.2); }
+
+/* ═══ Pixel Pet in Island ═══ */
+.pixel-pet.mini { transform: scale(0.65); transform-origin: center; }
+.pixel-pet.tiny { transform: scale(0.4); transform-origin: top left; }
+
+.circle-pet-wrap {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    transform: scale(1.1);
+}
+
+#dynamic-island.island-circle .circle-pet-wrap { display: flex; }
+#dynamic-island:not(.island-circle) .circle-pet-wrap { display: none; }
+
+.pill-pet-wrap {
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; flex-shrink: 0;
+}
+.pill-pet-wrap .pixel-pet { transform: scale(0.6); transform-origin: center; }
+
+.exp-pet-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--surface-border);
+}
+
+.exp-pet-wrap {
+    display: flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; flex-shrink: 0;
+}
+.exp-pet-wrap .pixel-pet { transform: scale(0.8); transform-origin: center; }
+
+.pet-action-icon { font-size: 11px; flex-shrink: 0; min-width: 12px; }
+
+.pet-speech {
+    font-size: 0.75rem; color: #8b8d96;
+    padding: 4px 10px;
+    background: #111; border: 1px solid #222;
+    border-radius: 8px;
+    position: relative;
+    animation: speechIn 0.3s var(--transition-snappy);
+}
+.pet-speech::before {
+    content: '';
+    position: absolute; left: -5px; top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-right-color: #222;
+}
+
+@keyframes speechIn {
+    from { opacity: 0; transform: translateX(-4px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.pet-zzz {
+    position: absolute; top: -6px; right: -6px;
+    font-size: 9px; color: #ea580c; font-weight: 700; opacity: 0.6;
+}
+.pet-zzz span:nth-child(1) { animation: zzz 2s ease-in-out infinite 0.3s; font-size: 7px; }
+.pet-zzz span:nth-child(2) { animation: zzz 2s ease-in-out infinite 0.6s; font-size: 6px; }
+@keyframes zzz {
+    0%, 100% { opacity: 0.3; transform: translateY(0); }
+    50% { opacity: 0.8; transform: translateY(-3px); }
+}
+
+.agent-pet-icon {
+    display: inline-block; width: 16px; height: 14px;
+    vertical-align: middle; overflow: visible;
+    position: relative; flex-shrink: 0;
+}
+
+/* Hide glow-orb, replaced by pixel pet */
+.glow-orb { display: none !important; }
+
+/* Hide pikachu, replaced by pixel pet */
+.pet-avatar { display: none !important; }
+.orbit-spinner { display: none !important; }
+
+.footer-stat { font-size: 0.75rem; color: #555; }
+
+#dynamic-island.island-circle .island-content-collapsed,
+#dynamic-island.island-circle .status-icon-group,
+#dynamic-island.island-circle .island-expanded-content { display: none; }

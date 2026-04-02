@@ -8,44 +8,65 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../modules/pet/pixel-pets.css">
 </head>
 <body>
-    
+
+    <!-- Settings Bar -->
+    <div class="settings-bar" id="settings-bar">
+      <button class="sound-toggle" id="sound-toggle" title="Toggle Sound">🔊</button>
+      <div class="bar-divider"></div>
+      <span class="bar-label">Pet:</span>
+      <button class="pet-option active" data-pet="octopus" title="Octopus"><div class="pixel-pet octopus mini"><div class="sprite"></div></div></button>
+      <button class="pet-option" data-pet="cat" title="Cat"><div class="pixel-pet cat mini"><div class="sprite"></div></div></button>
+      <button class="pet-option" data-pet="dragon" title="Dragon"><div class="pixel-pet dragon mini"><div class="sprite"></div></div></button>
+      <button class="pet-option" data-pet="robot" title="Robot"><div class="pixel-pet robot mini"><div class="sprite"></div></div></button>
+      <button class="pet-option" data-pet="ghost" title="Ghost"><div class="pixel-pet ghost mini"><div class="sprite"></div></div></button>
+      <button class="pet-option" data-pet="crab" title="Crab"><div class="pixel-pet crab mini"><div class="sprite"></div></div></button>
+    </div>
+
     <div id="dynamic-island" class="island-circle">
-        <!-- The header acts as the main collapsed view & drag handle -->
         <header class="island-header" id="drag-handle">
-            <!-- Pokemon Pet Avatar (only visible in circle state ideally) -->
-            <img class="pet-avatar" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" alt="Pikachu" draggable="false" />
-            
-            <!-- Traditional orbit spinner (kept as backup/fallback) -->
-            <div class="orbit-spinner"></div>
-            
+            <!-- Pixel Pet (circle state) -->
+            <div class="circle-pet-wrap" id="circle-pet-wrap">
+              <div class="pixel-pet octopus" id="circle-pixel-pet"><div class="sprite"></div></div>
+              <div class="pet-zzz" id="circle-zzz">z<span>z</span><span>z</span></div>
+            </div>
+
             <div class="island-content-collapsed">
-                <div class="glow-orb" id="glow-orb"></div>
+                <div class="pill-pet-wrap" id="pill-pet-wrap">
+                  <div class="pixel-pet octopus mini" id="pill-pixel-pet"><div class="sprite"></div></div>
+                </div>
+                <span class="pet-action-icon" id="pill-action"></span>
                 <div class="agent-compact-status" id="compact-status">
-                    Claude 5h 31% | All Systems Operational
+                    All Systems Operational
                 </div>
             </div>
-            
+
             <div class="status-icon-group" id="status-icons">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 3a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             </div>
         </header>
 
-        <!-- The expanded view containing the notifications and details -->
         <main class="island-expanded-content">
-            <div class="agent-states-panel" id="agent-states-panel" style="display:none;">
+            <div class="exp-pet-bar">
+              <div class="exp-pet-wrap" id="exp-pet-wrap">
+                <div class="pixel-pet octopus" id="exp-pixel-pet"><div class="sprite"></div></div>
+              </div>
+              <span class="pet-action-icon" id="exp-action"></span>
+              <div class="pet-speech" id="pet-speech">Ready to help!</div>
             </div>
-            
-            <div class="notification-feed" id="notification-feed">
-            </div>
+            <div class="notification-feed" id="notification-feed"></div>
             <div class="island-footer">
-                <span class="footer-link">Show all sessions</span>
+                <span class="footer-stat" id="footer-stat">0 agents</span>
+                <span class="footer-link">Show all sessions →</span>
             </div>
         </main>
     </div>
 
+    <script src="../modules/pet/pet.js"></script>
+    <script src="../modules/sound/sound.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

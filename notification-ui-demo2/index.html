@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Island — Black Gold</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="island" class="island island-circle">
+  <!-- Circle: spinning logo -->
+  <div class="circle-content">
+    <div class="logo-ring"></div>
+    <span class="logo-text">C</span>
+  </div>
+
+  <!-- Pill -->
+  <div class="pill-content">
+    <div class="pill-left">
+      <div class="agent-dot claude"></div>
+      <span class="pill-label">Claude</span>
+      <span class="pill-action">editing...</span>
+    </div>
+    <div class="pill-right">
+      <span class="pill-time">2.3s</span>
+    </div>
+  </div>
+
+  <!-- Expanded -->
+  <div class="expanded-content">
+    <div class="exp-header">
+      <div class="agent-dot claude"></div>
+      <span class="exp-agent">Claude Code</span>
+      <span class="exp-status">Awaiting Approval</span>
+      <span class="exp-time">12s ago</span>
+    </div>
+
+    <div class="exp-progress">
+      <div class="progress-labels">
+        <span>Intent</span>
+        <span>Search</span>
+        <span>Analyze</span>
+        <span>Done</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 65%">
+          <div class="progress-plane">✦</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="exp-card">
+      <div class="card-header">
+        <span class="card-icon">📝</span>
+        <span class="card-file">src/App.tsx</span>
+        <span class="card-tag">diff</span>
+      </div>
+      <div class="card-code">
+        <div class="code-line del">- import { useState } from 'react';</div>
+        <div class="code-line add">+ import { useState, useEffect } from 'react';</div>
+        <div class="code-line add">+ import { fetchData } from './api';</div>
+      </div>
+    </div>
+
+    <div class="exp-actions">
+      <button class="btn btn-deny">Deny</button>
+      <button class="btn btn-once">Allow Once</button>
+      <button class="btn btn-all">Allow All</button>
+    </div>
+
+    <div class="exp-footer">
+      <span>3 agents active</span>
+      <span class="footer-link">Show all →</span>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

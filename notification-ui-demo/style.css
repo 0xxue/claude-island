@@ -1,0 +1,343 @@
+:root {
+    --bg-color: transparent;
+    --surface: #0a0a0a;
+    --surface-border: #222222;
+    --text-primary: #ffffff;
+    --text-secondary: #8b8d96;
+    --font-stack: 'Inter', -apple-system, system-ui, sans-serif;
+    
+    /* Colors matching the reference image */
+    --claude-color: #d97757;
+    --codex-color: #3b82f6;
+    --gemini-color: #10b981;
+    --accent-write: #f59e0b;
+    
+    /* Button Colors */
+    --btn-deny: #27272a;
+    --btn-allow-once: #f4f4f5;
+    --btn-allow-all: #ea580c;
+    --btn-bypass: #be123c;
+    
+    --transition-snappy: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-stack); }
+
+body {
+    background-color: #111;
+    color: var(--text-primary);
+    min-height: 100vh;
+    background-image: linear-gradient(180deg, rgba(234,88,12,0.05) 0%, transparent 400px);
+    overflow: hidden;
+}
+
+/* Dynamic Island Container */
+#dynamic-island {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05);
+    overflow: hidden;
+    transition: width 0.3s var(--transition-snappy), 
+                height 0.3s var(--transition-snappy),
+                border-radius 0.3s var(--transition-snappy),
+                background 0.3s, border-color 0.3s, box-shadow 0.3s;
+    z-index: 9999;
+    will-change: width, height, transform;
+}
+
+/* --- 3 STATES --- */
+
+/* 1. Circle State (PET MODE!) */
+#dynamic-island.island-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+    /* Make the UI disappear completely to act like a desktop pet! */
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+/* 2. Pill (Normal) State */
+#dynamic-island.island-pill {
+    width: 460px;
+    height: 44px;
+    border-radius: 22px;
+}
+
+/* 3. Expanded State */
+#dynamic-island.island-expanded {
+    width: 500px;
+    border-radius: 20px;
+}
+
+/* Header / Drag Handle */
+.island-header {
+    height: 44px;
+    padding: 0 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: grab;
+    user-select: none;
+    flex-shrink: 0;
+    position: relative;
+    width: 100%;
+}
+.island-header:active { cursor: grabbing; }
+
+/* In circle state, header padding needs adjustment so inner dot is centered */
+#dynamic-island.island-circle .island-header {
+    justify-content: center;
+    padding: 0;
+    height: 60px; /* match the pet container height */
+}
+
+/* PET AVATAR (Pikachu) */
+.pet-avatar {
+    opacity: 0;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px; 
+    height: 60px;
+    image-rendering: pixelated;
+    pointer-events: none;
+    transition: opacity 0.3s var(--transition-snappy), transform 0.3s;
+}
+
+#dynamic-island.island-circle .pet-avatar {
+    opacity: 1;
+    /* Subtle breathing animation for pet */
+    animation: petHover 2s ease-in-out infinite alternate;
+}
+
+@keyframes petHover {
+    0% { transform: translate(-50%, -46%); }
+    100% { transform: translate(-50%, -54%); }
+}
+
+/* Orbit spinner for Circle state (Optional fallback or combination) */
+.orbit-spinner {
+    opacity: 0;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+/* Let's keep the orbit spinner available but fully hidden when pet is active. If you just want the orbiter, swap opacity here. */
+#dynamic-island.island-circle .orbit-spinner {
+    opacity: 0; 
+}
+
+
+/* Hide normally visible content when in CIRCLE/PET mode */
+#dynamic-island.island-circle .island-content-collapsed,
+#dynamic-island.island-circle .status-icon-group {
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+/* Pill Content */
+.island-content-collapsed {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 0.2s;
+}
+
+.glow-orb {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    transition: all 0.3s;
+    flex-shrink: 0;
+}
+.glow-orb.anim-pulse {
+    background: #fff;
+    box-shadow: 0 0 12px #fff;
+    animation: pulseOrb 1.5s infinite alternate;
+}
+@keyframes pulseOrb {
+    from { transform: scale(0.9); opacity: 0.7; }
+    to { transform: scale(1.1); opacity: 1; }
+}
+
+.agent-compact-status {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    max-width: 300px;
+    display: flex;
+    align-items: center;
+}
+.agent-compact-status span.highlight {
+    color: var(--claude-color);
+    margin-right: 4px;
+}
+
+.status-icon-group {
+    display: flex;
+    gap: 12px;
+    color: var(--text-secondary);
+    align-items: center;
+    transition: opacity 0.2s;
+}
+
+/* --- Expanded Content --- */
+.island-expanded-content {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 44px);
+    width: 100%;
+}
+
+#dynamic-island.island-expanded .island-expanded-content {
+    opacity: 1;
+    pointer-events: auto;
+    transition-delay: 0.1s;
+}
+
+/* Notification Feed with Scrollbar */
+.notification-feed {
+    flex: 1;
+    padding: 0 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scrollbar-width: none; 
+}
+
+/* Notification Card */
+.notif-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 8px;
+    animation: slideInIsland 0.3s var(--transition-snappy) forwards;
+    position: relative;
+    border-bottom: 1px solid var(--surface-border);
+}
+.notif-card:last-child {
+    border-bottom: none;
+}
+
+@keyframes slideInIsland {
+    0% { opacity: 0; transform: translateY(-5px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+.card-out {
+    animation: slideOutIsland 0.3s var(--transition-snappy) forwards !important;
+}
+@keyframes slideOutIsland {
+    0% { opacity: 1; transform: scale(1); height: auto; }
+    100% { opacity: 0; transform: scale(0.95); height: 0; padding: 0; margin: 0; border: none; }
+}
+
+.notif-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+.agent-badge {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.action-type {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--accent-write);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.notif-body {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #ccc;
+    padding-left: 2px;
+}
+
+.notif-code {
+    background: #111111;
+    border: 1px solid #222;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
+    font-size: 0.8rem;
+    color: #999;
+}
+.notif-code .filename {
+    color: #fff;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+.notif-code .filename span {
+    color: #22c55e;
+}
+.notif-code .code-content {
+    display: flex;
+    gap: 12px;
+    color: #fff;
+}
+.notif-code .line-nums {
+    color: #555;
+    text-align: right;
+    user-select: none;
+}
+
+.notif-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+}
+.btn {
+    flex: 1;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: transform 0.1s, filter 0.2s;
+}
+.btn:active { transform: scale(0.96); }
+.btn:hover { filter: brightness(1.1); }
+
+.btn-deny { background: var(--btn-deny); color: #fff; border: 1px solid #333; }
+.btn-allow-once { background: var(--btn-allow-once); color: #000; }
+.btn-allow-all { background: var(--btn-allow-all); color: #fff; }
+.btn-bypass { background: var(--btn-bypass); color: #fff; }
+
+.island-footer {
+    text-align: center;
+    padding: 12px 0;
+    font-size: 0.75rem;
+    color: #555;
+}
+.island-footer span {
+    cursor: pointer;
+}
+.island-footer span:hover {
+    color: #aaa;
+}

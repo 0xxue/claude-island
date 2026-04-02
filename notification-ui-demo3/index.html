@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Island — Terminal</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="island" class="island island-circle">
+  <!-- Circle: blinking cursor -->
+  <div class="circle-content">
+    <span class="cursor-blink">_</span>
+  </div>
+
+  <!-- Pill: terminal line -->
+  <div class="pill-content">
+    <span class="prompt">❯</span>
+    <span class="cmd" id="cmd-text">claude: editing src/App.tsx</span>
+    <span class="spinner">⠋</span>
+  </div>
+
+  <!-- Expanded: terminal card -->
+  <div class="expanded-content">
+    <div class="term-header">
+      <div class="term-dots">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+      </div>
+      <span class="term-title">claude-code — session:a8f3</span>
+    </div>
+
+    <div class="term-body">
+      <div class="term-line">
+        <span class="prompt">❯</span>
+        <span class="dim">claude asked to modify</span>
+        <span class="file">src/App.tsx</span>
+      </div>
+      <div class="term-line diff-del">- import { useState } from 'react';</div>
+      <div class="term-line diff-add">+ import { useState, useEffect } from 'react';</div>
+      <div class="term-line diff-add">+ import { fetchData } from './api';</div>
+      <div class="term-line gap"></div>
+      <div class="term-line">
+        <span class="warn">⚠ Permission required</span>
+      </div>
+    </div>
+
+    <div class="term-actions">
+      <button class="btn btn-y">[Y] Allow</button>
+      <button class="btn btn-n">[N] Deny</button>
+      <button class="btn btn-a">[A] Allow All</button>
+      <button class="btn btn-j">[J] Jump</button>
+    </div>
+
+    <div class="term-footer">
+      <span class="dim">3 agents</span>
+      <span class="dim">│</span>
+      <span class="dim">tokens: 12.4k</span>
+      <span class="dim">│</span>
+      <span class="green">healthy</span>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -242,17 +242,42 @@ document.addEventListener('mouseup', function() {
 });
 
 // ═══ Pill Status ═══
-function updatePillStatus() {
-  if (pendingAgents.size === 0) {
+var lastPillEvent = '';
+
+function updatePillStatus(eventType, agent, tool, detail) {
+  var sessionCount = Object.keys(sessionCards).length;
+
+  if (eventType) {
+    // Show latest event info in pill
+    var agentLabel = AGENT_LABELS[agent] || agent || '';
+    if (eventType === 'tool_start') {
+      lastPillEvent = agentLabel + ' · ' + (tool || 'working') + '...';
+      pillWave.className = 'pill-wave active';
+    } else if (eventType === 'tool_done') {
+      lastPillEvent = agentLabel + ' · ' + (tool || 'done') + ' ✓';
+      pillWave.className = 'pill-wave active';
+    } else if (eventType === 'stop') {
+      lastPillEvent = agentLabel + ' · waiting for input';
+      pillWave.className = 'pill-wave active';
+    } else if (eventType === 'permission') {
+      lastPillEvent = '<span class="highlight">🔐 ' + agentLabel + ' needs approval</span>';
+      pillWave.className = 'pill-wave active';
+    } else {
+      lastPillEvent = agentLabel + ' · ' + eventType;
+      pillWave.className = 'pill-wave active';
+    }
+  }
+
+  if (sessionCount === 0) {
     pillText.innerHTML = 'All Systems Operational';
     pillWave.className = 'pill-wave';
-    updatePetState('idle');
+  } else if (pendingAgents.size > 0) {
+    pillText.innerHTML = '<span class="highlight">' + notifCount + ' Pending</span> · ' + lastPillEvent;
   } else {
-    var names = Array.from(pendingAgents).map(function(a) { return AGENT_LABELS[a] || a; });
-    pillText.innerHTML = '<span class="highlight">' + notifCount + ' Pending</span> · ' + names.join(', ');
-    pillWave.className = 'pill-wave active';
+    pillText.innerHTML = lastPillEvent || (sessionCount + ' session(s) active');
   }
-  footerStat.textContent = pendingAgents.size + ' agents active';
+
+  footerStat.textContent = sessionCount + ' session(s)' + (pendingAgents.size > 0 ? ' · ' + pendingAgents.size + ' pending' : '');
 }
 
 // ═══ Agent Tabs ═══
@@ -297,7 +322,13 @@ function createNotification(data) {
   if (needsAction) pendingAgents.add(agent);
   updatePetState(eventType, tool);
   sound.playForEvent(eventType);
+  updatePillStatus(eventType, agent, tool);
   if (state === 'circle') setState('pill');
+
+  // Auto-expand on important events
+  if ((needsAction || eventType === 'stop') && state !== 'expanded') {
+    setState('expanded');
+  }
 
   var agentLabel = AGENT_LABELS[agent] || agent;
   var agentPet = AGENT_PETS[agent] || 'octopus';

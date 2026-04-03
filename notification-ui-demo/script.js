@@ -72,6 +72,16 @@ var popupOpen = false;
 settingsBtn.addEventListener('click', function(e) {
   e.stopPropagation();
   popupOpen = !popupOpen;
+  if (popupOpen) {
+    var rect = settingsBtn.getBoundingClientRect();
+    settingsPopup.style.top = (rect.top - settingsPopup.offsetHeight - 8) + 'px';
+    settingsPopup.style.left = (rect.right - settingsPopup.offsetWidth) + 'px';
+    settingsPopup.style.transform = 'none';
+    settingsPopup.style.display = 'block';
+    // Recalc after display
+    settingsPopup.style.top = (rect.top - settingsPopup.offsetHeight - 8) + 'px';
+    settingsPopup.style.left = (rect.right - settingsPopup.offsetWidth) + 'px';
+  }
   settingsPopup.style.display = popupOpen ? 'block' : 'none';
 });
 

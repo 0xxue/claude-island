@@ -6,77 +6,72 @@
 <title>Claude Island — Black Gold</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../modules/pet/pixel-pets.css">
 </head>
 <body>
 
 <div id="island" class="island island-circle">
-  <!-- Circle: spinning logo -->
+  <!-- Circle: pixel pet -->
   <div class="circle-content">
-    <div class="logo-ring"></div>
-    <span class="logo-text">C</span>
+    <div class="circle-pet-wrap" id="circle-pet-wrap">
+      <div class="pixel-pet octopus" id="circle-pixel-pet"><div class="sprite"></div></div>
+    </div>
+    <div class="pet-zzz" id="circle-zzz">z<span>z</span><span>z</span></div>
   </div>
 
   <!-- Pill -->
-  <div class="pill-content">
+  <header class="pill-content" id="drag-handle">
     <div class="pill-left">
-      <div class="agent-dot claude"></div>
-      <span class="pill-label">Claude</span>
-      <span class="pill-action">editing...</span>
+      <div class="pill-pet-wrap">
+        <div class="pixel-pet octopus mini" id="pill-pixel-pet"><div class="sprite"></div></div>
+      </div>
+      <span class="pet-action-icon" id="pill-pet-action"></span>
+      <span class="pill-text" id="pill-text">All Systems Operational</span>
     </div>
     <div class="pill-right">
-      <span class="pill-time">2.3s</span>
+      <div class="pill-wave" id="pill-wave"><span></span><span></span><span></span></div>
+      <div class="pill-icons">
+        <button class="icon-btn" id="sound-toggle" title="Sound">🔊</button>
+        <button class="icon-btn" id="settings-btn" title="Settings">⚙</button>
+      </div>
     </div>
-  </div>
+  </header>
 
   <!-- Expanded -->
-  <div class="expanded-content">
-    <div class="exp-header">
-      <div class="agent-dot claude"></div>
-      <span class="exp-agent">Claude Code</span>
-      <span class="exp-status">Awaiting Approval</span>
-      <span class="exp-time">12s ago</span>
-    </div>
-
-    <div class="exp-progress">
-      <div class="progress-labels">
-        <span>Intent</span>
-        <span>Search</span>
-        <span>Analyze</span>
-        <span>Done</span>
+  <main class="expanded-content">
+    <div class="exp-pet-bar">
+      <div class="exp-pet-wrap">
+        <div class="pixel-pet octopus" id="exp-pixel-pet"><div class="sprite"></div></div>
       </div>
-      <div class="progress-bar">
-        <div class="progress-fill" style="width: 65%">
-          <div class="progress-plane">✦</div>
-        </div>
-      </div>
+      <span class="pet-action-icon" id="exp-pet-action"></span>
+      <div class="pet-speech" id="pet-speech">Ready to help!</div>
     </div>
-
-    <div class="exp-card">
-      <div class="card-header">
-        <span class="card-icon">📝</span>
-        <span class="card-file">src/App.tsx</span>
-        <span class="card-tag">diff</span>
-      </div>
-      <div class="card-code">
-        <div class="code-line del">- import { useState } from 'react';</div>
-        <div class="code-line add">+ import { useState, useEffect } from 'react';</div>
-        <div class="code-line add">+ import { fetchData } from './api';</div>
-      </div>
-    </div>
-
-    <div class="exp-actions">
-      <button class="btn btn-deny">Deny</button>
-      <button class="btn btn-once">Allow Once</button>
-      <button class="btn btn-all">Allow All</button>
-    </div>
-
+    <div class="notification-feed" id="notification-feed"></div>
     <div class="exp-footer">
-      <span>3 agents active</span>
-      <span class="footer-link">Show all →</span>
+      <span class="footer-stat" id="footer-stat">0 agents</span>
+      <span class="footer-link">Show all sessions →</span>
+    </div>
+  </main>
+</div>
+
+<!-- Settings Popup -->
+<div class="settings-popup" id="settings-popup" style="display:none;">
+  <div class="popup-title">Settings</div>
+  <div class="popup-section">
+    <span class="popup-label">Choose Pet</span>
+    <div class="popup-pets">
+      <button class="pet-option active" data-pet="octopus"><div class="pixel-pet octopus mini"><div class="sprite"></div></div></button>
+      <button class="pet-option" data-pet="cat"><div class="pixel-pet cat mini"><div class="sprite"></div></div></button>
+      <button class="pet-option" data-pet="dragon"><div class="pixel-pet dragon mini"><div class="sprite"></div></div></button>
+      <button class="pet-option" data-pet="robot"><div class="pixel-pet robot mini"><div class="sprite"></div></div></button>
+      <button class="pet-option" data-pet="ghost"><div class="pixel-pet ghost mini"><div class="sprite"></div></div></button>
+      <button class="pet-option" data-pet="crab"><div class="pixel-pet crab mini"><div class="sprite"></div></div></button>
     </div>
   </div>
 </div>
 
+<script src="../modules/pet/pet.js"></script>
+<script src="../modules/sound/sound.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

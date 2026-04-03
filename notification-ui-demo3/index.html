@@ -6,65 +6,79 @@
 <title>Claude Island — Terminal</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../modules/pet/pixel-pets.css">
 </head>
 <body>
 
 <div id="island" class="island island-circle">
-  <!-- Circle: blinking cursor -->
+  <!-- Circle: pixel pet -->
   <div class="circle-content">
-    <span class="cursor-blink">_</span>
+    <div class="circle-pet-wrap" id="circle-pet-wrap">
+      <div class="pixel-pet octopus" id="circle-pixel-pet"><div class="sprite"></div></div>
+    </div>
+    <div class="pet-zzz" id="circle-zzz">z<span>z</span><span>z</span></div>
   </div>
 
-  <!-- Pill: terminal line -->
-  <div class="pill-content">
-    <span class="prompt">❯</span>
-    <span class="cmd" id="cmd-text">claude: editing src/App.tsx</span>
-    <span class="spinner">⠋</span>
-  </div>
+  <!-- Pill: terminal style -->
+  <header class="pill-content" id="drag-handle">
+    <div class="pill-left">
+      <span class="prompt">❯</span>
+      <div class="pill-pet-wrap">
+        <div class="pixel-pet octopus mini" id="pill-pixel-pet"><div class="sprite"></div></div>
+      </div>
+      <span class="pet-action-icon" id="pill-pet-action"></span>
+      <span class="pill-text" id="pill-text">idle</span>
+    </div>
+    <div class="pill-right">
+      <span class="spinner" id="pill-spinner">⠋</span>
+      <div class="pill-icons">
+        <button class="icon-btn" id="sound-toggle" title="Sound">🔊</button>
+        <button class="icon-btn" id="settings-btn" title="Settings">⚙</button>
+      </div>
+    </div>
+  </header>
 
-  <!-- Expanded: terminal card -->
-  <div class="expanded-content">
+  <!-- Expanded: terminal window -->
+  <main class="expanded-content">
     <div class="term-header">
       <div class="term-dots">
         <span class="dot red"></span>
         <span class="dot yellow"></span>
         <span class="dot green"></span>
       </div>
-      <span class="term-title">claude-code — session:a8f3</span>
-    </div>
-
-    <div class="term-body">
-      <div class="term-line">
-        <span class="prompt">❯</span>
-        <span class="dim">claude asked to modify</span>
-        <span class="file">src/App.tsx</span>
+      <div class="exp-pet-wrap">
+        <div class="pixel-pet octopus mini" id="exp-pixel-pet"><div class="sprite"></div></div>
       </div>
-      <div class="term-line diff-del">- import { useState } from 'react';</div>
-      <div class="term-line diff-add">+ import { useState, useEffect } from 'react';</div>
-      <div class="term-line diff-add">+ import { fetchData } from './api';</div>
-      <div class="term-line gap"></div>
-      <div class="term-line">
-        <span class="warn">⚠ Permission required</span>
-      </div>
+      <span class="pet-action-icon" id="exp-pet-action"></span>
+      <div class="pet-speech" id="pet-speech">Ready to help!</div>
     </div>
-
-    <div class="term-actions">
-      <button class="btn btn-y">[Y] Allow</button>
-      <button class="btn btn-n">[N] Deny</button>
-      <button class="btn btn-a">[A] Allow All</button>
-      <button class="btn btn-j">[J] Jump</button>
-    </div>
-
+    <div class="notification-feed" id="notification-feed"></div>
     <div class="term-footer">
-      <span class="dim">3 agents</span>
+      <span class="dim" id="footer-stat">0 agents</span>
       <span class="dim">│</span>
-      <span class="dim">tokens: 12.4k</span>
-      <span class="dim">│</span>
-      <span class="green">healthy</span>
+      <span class="footer-link">show all →</span>
+    </div>
+  </main>
+</div>
+
+<!-- Settings Popup -->
+<div class="settings-popup" id="settings-popup" style="display:none;">
+  <div class="popup-title">CONFIG</div>
+  <div class="popup-section">
+    <span class="popup-label">pet_type =</span>
+    <div class="popup-pets">
+      <button class="pet-option active" data-pet="octopus"><div class="pixel-pet octopus mini"><div class="sprite"></div></div></button>
+      <button class="pet-option" data-pet="cat"><div class="pixel-pet cat mini"><div class="sprite"></div></div></button>
+      <button class="pet-option" data-pet="dragon"><div class="pixel-pet dragon mini"><div class="sprite"></div></div></button>
+      <button class="pet-option" data-pet="robot"><div class="pixel-pet robot mini"><div class="sprite"></div></div></button>
+      <button class="pet-option" data-pet="ghost"><div class="pixel-pet ghost mini"><div class="sprite"></div></div></button>
+      <button class="pet-option" data-pet="crab"><div class="pixel-pet crab mini"><div class="sprite"></div></div></button>
     </div>
   </div>
 </div>
 
+<script src="../modules/pet/pet.js"></script>
+<script src="../modules/sound/sound.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

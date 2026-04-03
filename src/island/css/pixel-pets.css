@@ -1,0 +1,173 @@
+/* ═══════════════════════════════════════
+   Pixel Pet Sprites — CSS only, no images
+   Each pet is a tiny pixel grid drawn with box-shadow
+   3 animation frames per pet
+═══════════════════════════════════════ */
+
+.pixel-pet {
+  position: relative;
+  image-rendering: pixelated;
+  font-size: 0;
+}
+
+/* 1px = 3px visual (scale up) */
+.pixel-pet .sprite {
+  width: 3px;
+  height: 3px;
+  position: absolute;
+  top: 0; left: 0;
+  animation: pet-frame 1.5s steps(1) infinite;
+}
+
+/* ═══ OCTOPUS ═══ */
+.pixel-pet.octopus { width: 36px; height: 30px; }
+.pixel-pet.octopus .sprite {
+  background: transparent;
+  box-shadow:
+    /* Head */
+    9px 0 0 #A78BFA, 12px 0 0 #A78BFA, 15px 0 0 #A78BFA, 18px 0 0 #A78BFA,
+    6px 3px 0 #A78BFA, 9px 3px 0 #8B5CF6, 12px 3px 0 #8B5CF6, 15px 3px 0 #8B5CF6, 18px 3px 0 #8B5CF6, 21px 3px 0 #A78BFA,
+    6px 6px 0 #8B5CF6, 9px 6px 0 #fff, 12px 6px 0 #1a1a2e, 15px 6px 0 #fff, 18px 6px 0 #1a1a2e, 21px 6px 0 #8B5CF6,
+    6px 9px 0 #A78BFA, 9px 9px 0 #8B5CF6, 12px 9px 0 #8B5CF6, 15px 9px 0 #8B5CF6, 18px 9px 0 #8B5CF6, 21px 9px 0 #A78BFA,
+    /* Tentacles */
+    3px 12px 0 #A78BFA, 9px 12px 0 #A78BFA, 15px 12px 0 #A78BFA, 21px 12px 0 #A78BFA, 27px 12px 0 #A78BFA,
+    0px 15px 0 #8B5CF6, 6px 15px 0 #8B5CF6, 12px 15px 0 #8B5CF6, 18px 15px 0 #8B5CF6, 24px 15px 0 #8B5CF6,
+    3px 18px 0 #A78BFA, 9px 18px 0 #A78BFA, 21px 18px 0 #A78BFA, 27px 18px 0 #A78BFA;
+}
+
+/* ═══ CAT ═══ */
+.pixel-pet.cat { width: 33px; height: 30px; }
+.pixel-pet.cat .sprite {
+  background: transparent;
+  box-shadow:
+    /* Ears */
+    3px 0 0 #F59E0B, 6px 0 0 #F59E0B, 21px 0 0 #F59E0B, 24px 0 0 #F59E0B,
+    6px 3px 0 #D97706, 9px 3px 0 #F59E0B, 18px 3px 0 #F59E0B, 21px 3px 0 #D97706,
+    /* Head */
+    6px 6px 0 #F59E0B, 9px 6px 0 #F59E0B, 12px 6px 0 #F59E0B, 15px 6px 0 #F59E0B, 18px 6px 0 #F59E0B, 21px 6px 0 #F59E0B,
+    6px 9px 0 #F59E0B, 9px 9px 0 #22C55E, 12px 9px 0 #F59E0B, 15px 9px 0 #F59E0B, 18px 9px 0 #22C55E, 21px 9px 0 #F59E0B,
+    6px 12px 0 #F59E0B, 9px 12px 0 #F59E0B, 12px 12px 0 #FCA5A5, 15px 12px 0 #FCA5A5, 18px 12px 0 #F59E0B, 21px 12px 0 #F59E0B,
+    /* Body */
+    9px 15px 0 #D97706, 12px 15px 0 #D97706, 15px 15px 0 #D97706, 18px 15px 0 #D97706,
+    9px 18px 0 #D97706, 12px 18px 0 #D97706, 15px 18px 0 #D97706, 18px 18px 0 #D97706,
+    /* Legs */
+    6px 21px 0 #F59E0B, 9px 21px 0 #F59E0B, 18px 21px 0 #F59E0B, 21px 21px 0 #F59E0B,
+    /* Tail */
+    24px 15px 0 #D97706, 27px 12px 0 #D97706, 30px 9px 0 #D97706;
+}
+
+/* ═══ DRAGON ═══ */
+.pixel-pet.dragon { width: 36px; height: 30px; }
+.pixel-pet.dragon .sprite {
+  background: transparent;
+  box-shadow:
+    /* Horn */
+    15px 0 0 #FDE68A, 18px 0 0 #FDE68A,
+    /* Head */
+    9px 3px 0 #22C55E, 12px 3px 0 #22C55E, 15px 3px 0 #22C55E, 18px 3px 0 #22C55E, 21px 3px 0 #22C55E,
+    9px 6px 0 #16A34A, 12px 6px 0 #EF4444, 15px 6px 0 #16A34A, 18px 6px 0 #EF4444, 21px 6px 0 #16A34A,
+    9px 9px 0 #22C55E, 12px 9px 0 #22C55E, 15px 9px 0 #22C55E, 18px 9px 0 #22C55E, 21px 9px 0 #22C55E,
+    /* Body */
+    6px 12px 0 #16A34A, 9px 12px 0 #22C55E, 12px 12px 0 #22C55E, 15px 12px 0 #22C55E, 18px 12px 0 #22C55E, 21px 12px 0 #16A34A,
+    6px 15px 0 #22C55E, 9px 15px 0 #FDE68A, 12px 15px 0 #FDE68A, 15px 15px 0 #FDE68A, 18px 15px 0 #22C55E, 24px 15px 0 #22C55E,
+    /* Wing */
+    0px 9px 0 #34D399, 3px 6px 0 #34D399, 3px 9px 0 #34D399, 3px 12px 0 #34D399,
+    /* Legs & Tail */
+    9px 18px 0 #16A34A, 12px 18px 0 #16A34A, 18px 18px 0 #16A34A, 21px 18px 0 #16A34A,
+    24px 18px 0 #22C55E, 27px 21px 0 #22C55E, 30px 21px 0 #16A34A;
+}
+
+/* ═══ ROBOT ═══ */
+.pixel-pet.robot { width: 30px; height: 30px; }
+.pixel-pet.robot .sprite {
+  background: transparent;
+  box-shadow:
+    /* Antenna */
+    12px 0 0 #EF4444, 15px 0 0 #EF4444,
+    12px 3px 0 #64748B,
+    /* Head */
+    6px 6px 0 #94A3B8, 9px 6px 0 #94A3B8, 12px 6px 0 #94A3B8, 15px 6px 0 #94A3B8, 18px 6px 0 #94A3B8, 21px 6px 0 #94A3B8,
+    6px 9px 0 #64748B, 9px 9px 0 #60A5FA, 12px 9px 0 #64748B, 15px 9px 0 #64748B, 18px 9px 0 #60A5FA, 21px 9px 0 #64748B,
+    6px 12px 0 #94A3B8, 9px 12px 0 #94A3B8, 12px 12px 0 #94A3B8, 15px 12px 0 #94A3B8, 18px 12px 0 #94A3B8, 21px 12px 0 #94A3B8,
+    /* Body */
+    9px 15px 0 #64748B, 12px 15px 0 #FBBF24, 15px 15px 0 #FBBF24, 18px 15px 0 #64748B,
+    9px 18px 0 #94A3B8, 12px 18px 0 #94A3B8, 15px 18px 0 #94A3B8, 18px 18px 0 #94A3B8,
+    /* Legs */
+    9px 21px 0 #64748B, 12px 21px 0 #64748B, 15px 21px 0 #64748B, 18px 21px 0 #64748B;
+}
+
+/* ═══ GHOST ═══ */
+.pixel-pet.ghost { width: 30px; height: 30px; }
+.pixel-pet.ghost .sprite {
+  background: transparent;
+  box-shadow:
+    /* Head */
+    9px 0 0 #E2E8F0, 12px 0 0 #E2E8F0, 15px 0 0 #E2E8F0, 18px 0 0 #E2E8F0,
+    6px 3px 0 #F1F5F9, 9px 3px 0 #F1F5F9, 12px 3px 0 #F1F5F9, 15px 3px 0 #F1F5F9, 18px 3px 0 #F1F5F9, 21px 3px 0 #F1F5F9,
+    6px 6px 0 #F1F5F9, 9px 6px 0 #1E293B, 12px 6px 0 #F1F5F9, 15px 6px 0 #F1F5F9, 18px 6px 0 #1E293B, 21px 6px 0 #F1F5F9,
+    6px 9px 0 #E2E8F0, 9px 9px 0 #E2E8F0, 12px 9px 0 #1E293B, 15px 9px 0 #1E293B, 18px 9px 0 #E2E8F0, 21px 9px 0 #E2E8F0,
+    /* Body */
+    6px 12px 0 #F1F5F9, 9px 12px 0 #F1F5F9, 12px 12px 0 #F1F5F9, 15px 12px 0 #F1F5F9, 18px 12px 0 #F1F5F9, 21px 12px 0 #F1F5F9,
+    6px 15px 0 #E2E8F0, 9px 15px 0 #E2E8F0, 12px 15px 0 #E2E8F0, 15px 15px 0 #E2E8F0, 18px 15px 0 #E2E8F0, 21px 15px 0 #E2E8F0,
+    /* Wavy bottom */
+    6px 18px 0 #F1F5F9, 9px 18px 0 #F1F5F9, 15px 18px 0 #F1F5F9, 18px 18px 0 #F1F5F9,
+    3px 21px 0 #E2E8F0, 12px 21px 0 #E2E8F0, 21px 21px 0 #E2E8F0;
+}
+
+/* ═══ CRAB ═══ */
+.pixel-pet.crab { width: 36px; height: 27px; }
+.pixel-pet.crab .sprite {
+  background: transparent;
+  box-shadow:
+    /* Claws */
+    0px 3px 0 #EF4444, 3px 3px 0 #EF4444, 3px 6px 0 #DC2626, 27px 3px 0 #EF4444, 30px 3px 0 #EF4444, 27px 6px 0 #DC2626,
+    0px 6px 0 #EF4444, 30px 6px 0 #EF4444,
+    /* Arms */
+    6px 6px 0 #DC2626, 24px 6px 0 #DC2626,
+    /* Body */
+    9px 6px 0 #EF4444, 12px 6px 0 #EF4444, 15px 6px 0 #EF4444, 18px 6px 0 #EF4444, 21px 6px 0 #EF4444,
+    9px 9px 0 #DC2626, 12px 9px 0 #fff, 15px 9px 0 #DC2626, 18px 9px 0 #fff, 21px 9px 0 #DC2626,
+    9px 12px 0 #EF4444, 12px 12px 0 #EF4444, 15px 12px 0 #EF4444, 18px 12px 0 #EF4444, 21px 12px 0 #EF4444,
+    /* Legs */
+    6px 15px 0 #DC2626, 9px 15px 0 #DC2626, 12px 18px 0 #DC2626,
+    21px 15px 0 #DC2626, 24px 15px 0 #DC2626, 18px 18px 0 #DC2626;
+}
+
+/* ═══ Bounce animation for all ═══ */
+.pixel-pet .sprite {
+  animation: pixel-bounce 2s ease-in-out infinite;
+}
+
+@keyframes pixel-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+/* State overrides */
+.pixel-pet.state-working .sprite { animation: pixel-work 0.4s ease-in-out infinite; }
+.pixel-pet.state-alert .sprite { animation: pixel-alert 0.5s ease-in-out infinite; }
+.pixel-pet.state-happy .sprite { animation: pixel-happy 0.3s ease-in-out 5; }
+.pixel-pet.state-error .sprite { animation: pixel-error 0.2s ease-in-out 4; }
+
+@keyframes pixel-work {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-1px) rotate(-2deg); }
+  75% { transform: translateY(-1px) rotate(2deg); }
+}
+
+@keyframes pixel-alert {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes pixel-happy {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-5px) rotate(-8deg); }
+  75% { transform: translateY(-5px) rotate(8deg); }
+}
+
+@keyframes pixel-error {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}

@@ -364,7 +364,7 @@ body {
     border: 1px solid #222;
     border-radius: 14px;
     padding: 12px;
-    z-index: 100;
+    z-index: 10000;
     min-width: 200px;
     box-shadow: 0 12px 40px rgba(0,0,0,0.6);
     animation: popupIn 0.25s var(--transition-snappy);

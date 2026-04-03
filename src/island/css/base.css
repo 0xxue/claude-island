@@ -1,0 +1,210 @@
+/* Claude Island — Base Layout (theme-agnostic) */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: transparent;
+  overflow: hidden;
+  font-family: var(--font-stack, 'Inter', system-ui, sans-serif);
+  color: var(--text-primary, #F1F5F9);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══ Island Container ═══ */
+.island {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  backdrop-filter: var(--backdrop, none);
+  -webkit-backdrop-filter: var(--backdrop, none);
+  border: 1px solid var(--surface-border);
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: var(--island-shadow, 0 24px 48px rgba(0,0,0,0.4));
+  transition: all 0.45s var(--ease);
+  z-index: 9999;
+  will-change: width, height, border-radius;
+}
+
+/* ═══ Circle State ═══ */
+.island.island-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.island.island-circle .pill-content,
+.island.island-circle .expanded-content { display: none; }
+
+.circle-content {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+.island:not(.island-circle) .circle-content { display: none; }
+
+.circle-pet-wrap {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  transform: scale(1.2);
+}
+
+/* ═══ Pill State ═══ */
+.island.island-pill {
+  width: 440px;
+  height: 44px;
+  border-radius: var(--radius-island, 22px);
+}
+.island.island-pill .expanded-content { display: none; }
+
+.pill-content {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 44px; padding: 0 12px;
+  cursor: grab; user-select: none; width: 100%;
+}
+.pill-content:active { cursor: grabbing; }
+.island:not(.island-pill) .pill-content { display: none; }
+
+.pill-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+.pill-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+
+.pill-pet-wrap {
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; flex-shrink: 0; overflow: hidden;
+}
+.pill-pet-wrap .pixel-pet { transform: scale(0.65); transform-origin: center; }
+
+.pill-text {
+  font-size: 12.5px; font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pill-text .highlight { color: var(--accent); font-weight: 600; }
+
+.pill-wave { display: flex; gap: 2px; align-items: center; }
+.pill-wave span {
+  width: 3px; height: 10px;
+  background: var(--accent);
+  border-radius: 2px;
+  animation: wave 1.2s ease-in-out infinite;
+  opacity: 0; transition: opacity 0.3s;
+}
+.pill-wave.active span { opacity: 1; }
+.pill-wave span:nth-child(2) { animation-delay: 0.15s; height: 14px; }
+.pill-wave span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.4); opacity: 0.3; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+
+.pill-icons { display: flex; gap: 8px; }
+
+/* ═══ Expanded State ═══ */
+.island.island-expanded {
+  width: 460px;
+  border-radius: var(--radius-island, 20px);
+}
+
+.expanded-content {
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s ease;
+  display: flex; flex-direction: column; width: 100%;
+}
+.island.island-expanded .expanded-content {
+  opacity: 1; pointer-events: auto; transition-delay: 0.1s;
+}
+.island:not(.island-expanded) .expanded-content { display: none; }
+
+/* Pet bar */
+.exp-pet-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--surface-border);
+}
+.exp-pet-wrap {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; flex-shrink: 0;
+}
+.exp-pet-wrap .pixel-pet { transform: scale(0.85); transform-origin: center; }
+
+.pet-speech {
+  font-size: 12px; color: var(--text-secondary);
+  padding: 4px 10px;
+  background: var(--glass-bg, rgba(255,255,255,0.04));
+  border-radius: 10px;
+  border: 1px solid var(--surface-border);
+  position: relative;
+  animation: speech-in 0.3s var(--ease);
+}
+.pet-speech::before {
+  content: ''; position: absolute;
+  left: -5px; top: 50%; transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: var(--surface-border);
+}
+
+@keyframes speech-in {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Agent tabs */
+.agent-tabs {
+  display: flex; gap: 4px; padding: 6px 14px;
+  border-bottom: 1px solid var(--surface-border);
+  overflow-x: auto;
+}
+.agent-tab {
+  padding: 3px 10px; border: 1px solid var(--surface-border);
+  background: transparent; border-radius: 12px;
+  font-size: 11px; font-weight: 500; cursor: pointer;
+  color: var(--text-dim); transition: all 0.15s;
+  font-family: inherit; white-space: nowrap;
+}
+.agent-tab:hover { border-color: var(--accent); color: var(--text-secondary); }
+.agent-tab.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+/* Notification feed */
+.notification-feed {
+  padding: 8px 14px;
+  overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+  max-height: 380px; scrollbar-width: none;
+}
+.notification-feed::-webkit-scrollbar { display: none; }
+
+/* Footer */
+.island-footer {
+  display: flex; justify-content: space-between;
+  padding: 10px 14px; font-size: 11px;
+  color: var(--text-dim);
+  border-top: 1px solid var(--surface-border);
+}
+.footer-link { color: var(--accent); cursor: pointer; opacity: 0.6; transition: opacity 0.2s; }
+.footer-link:hover { opacity: 1; }
+
+/* ═══ Pet Animations ═══ */
+.pet-action-icon { font-size: 12px; flex-shrink: 0; min-width: 14px; }
+.pet-zzz {
+  position: absolute; top: 4px; right: 2px;
+  font-size: 10px; color: var(--accent); font-weight: 700; opacity: 0.6;
+}
+.pet-zzz span:nth-child(1) { animation: zzz 2s ease-in-out infinite 0.3s; font-size: 8px; }
+.pet-zzz span:nth-child(2) { animation: zzz 2s ease-in-out infinite 0.6s; font-size: 7px; }
+
+@keyframes zzz {
+  0%, 100% { opacity: 0.3; transform: translateY(0); }
+  50% { opacity: 0.8; transform: translateY(-3px); }
+}
+
+/* Pixel pet sizes */
+.pixel-pet.mini { transform: scale(0.7); transform-origin: center; }
+.pixel-pet.tiny { transform: scale(0.4); transform-origin: top left; }
+
+.agent-pet-icon {
+  display: inline-block; width: 16px; height: 14px;
+  vertical-align: middle; overflow: visible; position: relative; flex-shrink: 0;
+}

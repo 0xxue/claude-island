@@ -1,0 +1,34 @@
+/* Black Gold theme (Demo 2) */
+html[data-theme="gold"] {
+  --accent: #D4A843;
+  --accent-soft: rgba(212, 168, 67, 0.12);
+  --accent-glow: rgba(212, 168, 67, 0.3);
+  --green: #22C55E;
+  --green-soft: rgba(34, 197, 94, 0.15);
+  --red: #EF4444;
+  --red-soft: rgba(239, 68, 68, 0.12);
+  --amber: #FBBF24;
+  --amber-soft: rgba(251, 191, 36, 0.12);
+  --blue: #3B82F6;
+  --surface: #0A0A0A;
+  --surface-border: #1E1E1E;
+  --glass-bg: #141414;
+  --glass-hover: #1A1A1A;
+  --glass-strong: #1E1E1E;
+  --popup-bg: #0A0A0A;
+  --text-primary: #FFFFFF;
+  --text-secondary: #6B7280;
+  --text-dim: #444444;
+  --font-stack: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius-island: 22px;
+  --radius-card: 10px;
+  --backdrop: none;
+  --island-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --claude-color: #D4A843;
+  --codex-color: #3B82F6;
+  --gemini-color: #22C55E;
+  --cursor-color: #A78BFA;
+  --windsurf-color: #06B6D4;
+}

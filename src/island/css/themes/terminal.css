@@ -1,0 +1,45 @@
+/* Terminal / Hacker theme (Demo 3) */
+html[data-theme="terminal"] {
+  --accent: #00FF41;
+  --accent-soft: rgba(0, 255, 65, 0.1);
+  --accent-glow: rgba(0, 255, 65, 0.15);
+  --green: #00FF41;
+  --green-soft: rgba(0, 255, 65, 0.1);
+  --red: #FF3B3B;
+  --red-soft: rgba(255, 59, 59, 0.12);
+  --amber: #FFBE0B;
+  --amber-soft: rgba(255, 190, 11, 0.12);
+  --blue: #60A5FA;
+  --surface: #0D1117;
+  --surface-border: #1B2430;
+  --glass-bg: transparent;
+  --glass-hover: #161B22;
+  --glass-strong: #1B2430;
+  --popup-bg: #0D1117;
+  --text-primary: #C9D1D9;
+  --text-secondary: #8B949E;
+  --text-dim: #484F58;
+  --font-stack: 'JetBrains Mono', 'Consolas', monospace;
+  --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+  --radius-island: 4px;
+  --radius-card: 4px;
+  --backdrop: none;
+  --island-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 1px var(--accent-glow);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --claude-color: #00FF41;
+  --codex-color: #60A5FA;
+  --gemini-color: #00FF41;
+  --cursor-color: #FFBE0B;
+  --windsurf-color: #06B6D4;
+}
+
+/* Terminal-specific overrides */
+html[data-theme="terminal"] .pill-text::before {
+  content: '❯ ';
+  color: var(--accent);
+}
+html[data-theme="terminal"] .btn {
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

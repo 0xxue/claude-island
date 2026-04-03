@@ -13,19 +13,30 @@ pub struct AppState {
 
 // ═══ Tauri Commands ═══
 
+/// Resize window to fit island + re-center at top
 #[tauri::command]
-fn drag_window(window: tauri::WebviewWindow, dx: i32, dy: i32) {
-    if let Ok(pos) = window.outer_position() {
-        let _ = window.set_position(tauri::PhysicalPosition::new(pos.x + dx, pos.y + dy));
+fn resize_island(window: tauri::WebviewWindow, w: f64, h: f64) {
+    // Use LogicalSize — Tauri handles DPI scaling automatically
+    let _ = window.set_size(tauri::LogicalSize::new(w, h));
+    // Re-center horizontally at top of screen
+    if let Ok(Some(monitor)) = window.current_monitor() {
+        let scale = window.scale_factor().unwrap_or(1.0);
+        let mw = monitor.size().width as f64 / scale;
+        let x = ((mw - w) / 2.0) as i32;
+        let _ = window.set_position(tauri::LogicalPosition::new(x, 8));
     }
 }
 
 #[tauri::command]
 fn recenter_window(window: tauri::WebviewWindow) {
     if let Ok(Some(monitor)) = window.current_monitor() {
-        let size = monitor.size();
-        let x = (size.width as i32 - 500) / 2;
-        let _ = window.set_position(tauri::PhysicalPosition::new(x, 8));
+        let scale = window.scale_factor().unwrap_or(1.0);
+        let mw = monitor.size().width as f64 / scale;
+        if let Ok(ws) = window.inner_size() {
+            let ww = ws.width as f64 / scale;
+            let x = ((mw - ww) / 2.0) as i32;
+            let _ = window.set_position(tauri::LogicalPosition::new(x, 8));
+        }
     }
 }
 
@@ -36,11 +47,7 @@ fn dismiss_island(window: tauri::WebviewWindow) {
 
 #[tauri::command]
 fn show_island(window: tauri::WebviewWindow) {
-    if let Ok(Some(monitor)) = window.current_monitor() {
-        let size = monitor.size();
-        let x = (size.width as i32 - 500) / 2;
-        let _ = window.set_position(tauri::PhysicalPosition::new(x, 8));
-    }
+    recenter_window(window.clone());
     let _ = window.show();
 }
 
@@ -120,12 +127,14 @@ pub fn run() {
                 ws_server::start(handle, sessions).await;
             });
 
-            // Show window centered
+            // Start as circle (56x56), centered at top
             if let Some(w) = app.get_webview_window("main") {
+                let _ = w.set_size(tauri::LogicalSize::new(56.0, 56.0));
                 if let Ok(Some(monitor)) = w.current_monitor() {
-                    let size = monitor.size();
-                    let x = (size.width as i32 - 500) / 2;
-                    let _ = w.set_position(tauri::PhysicalPosition::new(x, 8));
+                    let scale = w.scale_factor().unwrap_or(1.0);
+                    let mw = monitor.size().width as f64 / scale;
+                    let x = ((mw - 56.0) / 2.0) as i32;
+                    let _ = w.set_position(tauri::LogicalPosition::new(x, 8));
                 }
                 let _ = w.show();
             }
@@ -141,7 +150,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            drag_window,
+            resize_island,
             recenter_window,
             dismiss_island,
             show_island,

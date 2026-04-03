@@ -12,9 +12,8 @@ body {
 /* ═══ Island Container ═══ */
 .island {
   position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 0;
+  left: 0;
   background: var(--surface);
   backdrop-filter: var(--backdrop, none);
   -webkit-backdrop-filter: var(--backdrop, none);

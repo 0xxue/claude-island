@@ -101,6 +101,8 @@ settingsBtn.addEventListener('click', function(e) {
   e.stopPropagation();
   popupOpen = !popupOpen;
   if (popupOpen) {
+    // Expand window to fit popup below island
+    if (window.islandAPI && window.islandAPI.resizeIsland) window.islandAPI.resizeIsland(460, 500);
     settingsPopup.style.display = 'block';
     var rect = settingsBtn.getBoundingClientRect();
     settingsPopup.style.top = (rect.bottom + 8) + 'px';
@@ -108,6 +110,9 @@ settingsBtn.addEventListener('click', function(e) {
     settingsPopup.style.transform = 'none';
   } else {
     settingsPopup.style.display = 'none';
+    // Restore window to current state size
+    var sz = STATE_SIZES[state] || STATE_SIZES.pill;
+    if (window.islandAPI && window.islandAPI.resizeIsland) window.islandAPI.resizeIsland(sz[0], sz[1]);
   }
 });
 
@@ -115,6 +120,9 @@ document.addEventListener('click', function(e) {
   if (popupOpen && !settingsPopup.contains(e.target) && e.target !== settingsBtn) {
     popupOpen = false;
     settingsPopup.style.display = 'none';
+    // Restore window size
+    var sz = STATE_SIZES[state] || STATE_SIZES.pill;
+    if (window.islandAPI && window.islandAPI.resizeIsland) window.islandAPI.resizeIsland(sz[0], sz[1]);
   }
 });
 
@@ -147,11 +155,20 @@ document.getElementById('volume-slider').addEventListener('input', function(e) {
 });
 
 // ═══ State Machine ═══
+// Window sizes for each state (matches CSS widths/heights exactly)
+var STATE_SIZES = { circle: [56, 56], pill: [440, 44], expanded: [460, 400] };
+
 function setState(s) {
   state = s;
   stateTime = Date.now();
   island.classList.remove('island-circle', 'island-pill', 'island-expanded');
   island.classList.add('island-' + s);
+  // Resize window to match island state
+  var sz = STATE_SIZES[s] || STATE_SIZES.pill;
+  console.log('[setState]', s, sz[0] + 'x' + sz[1]);
+  console.log('[window.islandAPI]', typeof window.islandAPI, window.islandAPI ? Object.keys(window.islandAPI).join(',') : 'NULL');
+  console.log('[hasResize]', !!(window.islandAPI && window.islandAPI.resizeIsland));
+  if (window.islandAPI && window.islandAPI.resizeIsland) window.islandAPI.resizeIsland(sz[0], sz[1]);
   updateHeight();
 }
 
@@ -159,7 +176,10 @@ function updateHeight() {
   if (state === 'expanded') {
     island.style.height = 'auto';
     var h = HEADER_H + expandedContent.scrollHeight;
-    island.style.height = Math.min(h, MAX_HEIGHT) + 'px';
+    h = Math.min(h, MAX_HEIGHT);
+    island.style.height = h + 'px';
+    // Update window to match actual expanded height
+    if (window.islandAPI && window.islandAPI.resizeIsland) window.islandAPI.resizeIsland(460, h);
   } else if (state === 'pill') {
     island.style.height = HEADER_H + 'px';
   } else {
@@ -194,30 +214,7 @@ island.addEventListener('click', function(e) {
   }
 });
 
-// ═══ Drag (CSS transform within window) ═══
-var isDragging = false, offX = 0, offY = 0, initDX = 0, initDY = 0;
-
-island.addEventListener('mousedown', function(e) {
-  if (e.target.closest('.btn') || e.target.closest('.icon-btn') || e.target.closest('.footer-link') || e.target.closest('.settings-popup') || e.target.closest('.agent-tab') || e.target.closest('.action-btn') || e.target.closest('.btn-jump') || e.target.closest('.volume-slider') || e.target.closest('.pet-option') || e.target.closest('.theme-option') || e.target.closest('.notification-feed')) return;
-  isDragging = true;
-  wasDragging = false;
-  initDX = e.clientX - offX;
-  initDY = e.clientY - offY;
-  island.style.transition = 'border-radius 0.45s, width 0.45s, background 0.45s, border-color 0.45s, box-shadow 0.45s';
-});
-
-document.addEventListener('mousemove', function(e) {
-  if (!isDragging) return;
-  e.preventDefault();
-  var dx = e.clientX - initDX, dy = e.clientY - initDY;
-  if (Math.abs(dx - offX) > 3 || Math.abs(dy - offY) > 3) wasDragging = true;
-  offX = dx; offY = dy;
-  island.style.transform = 'translate(calc(-50% + ' + offX + 'px), ' + offY + 'px)';
-});
-
-document.addEventListener('mouseup', function() {
-  if (isDragging) { isDragging = false; island.style.transition = ''; setTimeout(function() { wasDragging = false; }, 50); }
-});
+// No drag — fixed at top center, window = island size
 
 // ═══ Pill Status ═══
 function updatePillStatus() {
@@ -346,8 +343,8 @@ function createNotification(data) {
   card.querySelector('.jump-btn').addEventListener('click', function(e) {
     e.stopPropagation();
     sound.play('click');
-    if (window.island && window.island.focusAgent) {
-      window.island.focusAgent(
+    if (window.islandAPI && window.islandAPI.focusAgent) {
+      window.islandAPI.focusAgent(
         data.source || 'cli',
         data.terminal ? data.terminal.type : null,
         data.terminal ? (data.terminal.id || String(data.terminal.pid || '')) : null
@@ -362,8 +359,8 @@ function createNotification(data) {
         sound.play('complete');
         updatePetState('complete');
         var decision = btn.dataset.action;
-        if (window.island && window.island.respondPermission && data.requestId) {
-          window.island.respondPermission(data.requestId, decision);
+        if (window.islandAPI && window.islandAPI.respondPermission && data.requestId) {
+          window.islandAPI.respondPermission(data.requestId, decision);
         }
         btn.textContent = '✓';
         btn.style.opacity = '0.5';
@@ -407,8 +404,8 @@ function shortPath(p) {
 }
 
 // ═══ Event Listener (from Tauri/bridge) ═══
-if (window.island && window.island.onEvent) {
-  window.island.onEvent(function(event) {
+if (window.islandAPI && window.islandAPI.onEvent) {
+  window.islandAPI.onEvent(function(event) {
     var e = Object.assign({}, event);
     if (!e.type && e.event_type) e.type = e.event_type;
     if (!e.event_type && e.type) e.event_type = e.type;

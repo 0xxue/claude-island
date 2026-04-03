@@ -7,12 +7,13 @@
     "frontendDist": "../src/island"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "label": "main",
         "title": "Claude Island",
-        "width": 500,
-        "height": 700,
+        "width": 56,
+        "height": 56,
         "x": null,
         "y": 8,
         "decorations": false,

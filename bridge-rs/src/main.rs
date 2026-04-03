@@ -5,6 +5,141 @@ use tokio_tungstenite::connect_async;
 use futures_util::{SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
 
+#[cfg(target_os = "windows")]
+fn get_console_hwnd() -> Option<u64> {
+    unsafe {
+        let hwnd = windows_sys::Win32::System::Console::GetConsoleWindow();
+        if hwnd.is_null() { None } else { Some(hwnd as u64) }
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+fn get_console_hwnd() -> Option<u64> { None }
+
+#[cfg(target_os = "windows")]
+fn find_window_by_pid(target_pid: u32) -> Option<u64> {
+    use windows_sys::Win32::UI::WindowsAndMessaging::*;
+    use windows_sys::Win32::Foundation::HWND;
+    unsafe {
+        let mut hwnd: HWND = FindWindowExW(std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null(), std::ptr::null());
+        while !hwnd.is_null() {
+            let mut proc_id: u32 = 0;
+            GetWindowThreadProcessId(hwnd, &mut proc_id);
+            if proc_id == target_pid && IsWindowVisible(hwnd) != 0 {
+                return Some(hwnd as u64);
+            }
+            hwnd = FindWindowExW(std::ptr::null_mut(), hwnd, std::ptr::null(), std::ptr::null());
+        }
+    }
+    None
+}
+
+#[cfg(not(target_os = "windows"))]
+fn find_window_by_pid(_pid: u32) -> Option<u64> { None }
+
+#[cfg(target_os = "windows")]
+fn find_specific_ancestor(start_pid: u32, target_name: &str) -> Option<u32> {
+    use std::mem;
+    let mut pid = start_pid;
+    let target = target_name.to_lowercase();
+
+    unsafe {
+        let snap = windows_sys::Win32::System::Diagnostics::ToolHelp::CreateToolhelp32Snapshot(
+            windows_sys::Win32::System::Diagnostics::ToolHelp::TH32CS_SNAPPROCESS, 0);
+        if snap == windows_sys::Win32::Foundation::INVALID_HANDLE_VALUE { return None; }
+
+        for _ in 0..15 {
+            let mut entry: windows_sys::Win32::System::Diagnostics::ToolHelp::PROCESSENTRY32W = mem::zeroed();
+            entry.dwSize = mem::size_of::<windows_sys::Win32::System::Diagnostics::ToolHelp::PROCESSENTRY32W>() as u32;
+
+            if windows_sys::Win32::System::Diagnostics::ToolHelp::Process32FirstW(snap, &mut entry) != 0 {
+                loop {
+                    if entry.th32ProcessID == pid {
+                        let name: String = entry.szExeFile.iter()
+                            .take_while(|&&c| c != 0)
+                            .map(|&c| char::from(c as u8))
+                            .collect::<String>()
+                            .to_lowercase();
+                        if name == target {
+                            windows_sys::Win32::Foundation::CloseHandle(snap);
+                            return Some(pid);
+                        }
+                        pid = entry.th32ParentProcessID;
+                        break;
+                    }
+                    if windows_sys::Win32::System::Diagnostics::ToolHelp::Process32NextW(snap, &mut entry) == 0 {
+                        windows_sys::Win32::Foundation::CloseHandle(snap);
+                        return None;
+                    }
+                }
+            } else {
+                break;
+            }
+            if pid == 0 { break; }
+        }
+        windows_sys::Win32::Foundation::CloseHandle(snap);
+    }
+    None
+}
+
+#[cfg(target_os = "windows")]
+fn find_terminal_pid() -> Option<u32> {
+    // Walk up process tree to find the terminal host (cmd.exe, powershell, mintty, etc.)
+    use std::mem;
+    let mut pid = std::process::id();
+    let terminal_names = ["cmd.exe", "powershell.exe", "pwsh.exe", "mintty.exe",
+                          "windowsterminal.exe", "code.exe", "cursor.exe",
+                          "conhost.exe", "bash.exe"];
+
+    unsafe {
+        let snap = windows_sys::Win32::System::Diagnostics::ToolHelp::CreateToolhelp32Snapshot(
+            windows_sys::Win32::System::Diagnostics::ToolHelp::TH32CS_SNAPPROCESS, 0);
+        if snap == windows_sys::Win32::Foundation::INVALID_HANDLE_VALUE {
+            return None;
+        }
+
+        for _ in 0..15 {
+            // Get parent PID
+            let mut entry: windows_sys::Win32::System::Diagnostics::ToolHelp::PROCESSENTRY32W = mem::zeroed();
+            entry.dwSize = mem::size_of::<windows_sys::Win32::System::Diagnostics::ToolHelp::PROCESSENTRY32W>() as u32;
+
+            let mut found_parent = None;
+            if windows_sys::Win32::System::Diagnostics::ToolHelp::Process32FirstW(snap, &mut entry) != 0 {
+                loop {
+                    if entry.th32ProcessID == pid {
+                        found_parent = Some(entry.th32ParentProcessID);
+                        // Check process name
+                        let name: String = entry.szExeFile.iter()
+                            .take_while(|&&c| c != 0)
+                            .map(|&c| char::from(c as u8))
+                            .collect::<String>()
+                            .to_lowercase();
+                        // If current process is a terminal, return its PID
+                        if terminal_names.iter().any(|t| name == *t) {
+                            windows_sys::Win32::Foundation::CloseHandle(snap);
+                            return Some(pid);
+                        }
+                        break;
+                    }
+                    if windows_sys::Win32::System::Diagnostics::ToolHelp::Process32NextW(snap, &mut entry) == 0 {
+                        break;
+                    }
+                }
+            }
+
+            match found_parent {
+                Some(ppid) if ppid != pid && ppid != 0 => pid = ppid,
+                _ => break,
+            }
+        }
+        windows_sys::Win32::Foundation::CloseHandle(snap);
+    }
+    None
+}
+
+#[cfg(not(target_os = "windows"))]
+fn find_terminal_pid() -> Option<u32> { None }
+
 const WS_URL: &str = "ws://127.0.0.1:19432";
 const CONNECT_TIMEOUT: Duration = Duration::from_millis(2000);
 const PERMISSION_TIMEOUT: Duration = Duration::from_secs(9);
@@ -51,6 +186,9 @@ struct TerminalInfo {
     id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pid: Option<u32>,
+    /// Console window handle (HWND as u64) — unique per terminal window
+    #[serde(skip_serializing_if = "Option::is_none")]
+    hwnd: Option<u64>,
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -116,46 +254,57 @@ fn parse_args() -> Args {
 // ═══ Terminal Detection ═══
 
 fn detect_terminal() -> TerminalInfo {
+    let console_hwnd = get_console_hwnd();
+
     // Priority: host window first, then shell type
-    // WT_SESSION = Windows Terminal (even if shell is git-bash/powershell/cmd)
     if let Ok(session) = env::var("WT_SESSION") {
         return TerminalInfo {
             terminal_type: "windows-terminal".into(),
             id: Some(session),
             pid: None,
+            hwnd: console_hwnd,
         };
     }
-    // VSCODE_PID = VS Code / Cursor integrated terminal
     if let Ok(pid) = env::var("VSCODE_PID") {
         let t = if env::var("CURSOR_TRACE_DIR").is_ok() { "cursor" } else { "vscode" };
         return TerminalInfo {
             terminal_type: t.into(),
             id: Some(pid),
             pid: None,
+            hwnd: console_hwnd,
         };
     }
-    // MSYSTEM = Git Bash shell, but might be standalone mintty
-    // Don't return "git-bash" as terminal type — it's a shell, not a window
-    // Fall through to check other host windows
+    // CMD check — PROMPT exists in CMD environment (even with Git in PATH)
+    // This must come before MSYSTEM check since CMD can have MSYSTEM set
+    if console_hwnd.is_some() && env::var("PROMPT").is_ok() {
+        return TerminalInfo {
+            terminal_type: "cmd".into(),
+            id: None,
+            pid: Some(std::process::id()),
+            hwnd: console_hwnd,
+        };
+    }
+    // MSYSTEM without console = standalone mintty (Git Bash)
+    // Fall through to other checks
     if let Ok(tmux) = env::var("TMUX") {
         return TerminalInfo {
             terminal_type: "tmux".into(),
             id: Some(tmux),
-            pid: None,
+            pid: None, hwnd: console_hwnd,
         };
     }
     if let Ok(id) = env::var("ITERM_SESSION_ID") {
         return TerminalInfo {
             terminal_type: "iterm2".into(),
             id: Some(id),
-            pid: None,
+            pid: None, hwnd: console_hwnd,
         };
     }
     if let Ok(id) = env::var("KITTY_PID") {
         return TerminalInfo {
             terminal_type: "kitty".into(),
             id: Some(id),
-            pid: None,
+            pid: None, hwnd: console_hwnd,
         };
     }
     if env::var("WSL_DISTRO_NAME").is_ok() {
@@ -163,6 +312,7 @@ fn detect_terminal() -> TerminalInfo {
             terminal_type: "wsl".into(),
             id: env::var("WSL_DISTRO_NAME").ok(),
             pid: Some(std::process::id()),
+            hwnd: console_hwnd,
         };
     }
 
@@ -174,10 +324,18 @@ fn detect_terminal() -> TerminalInfo {
     } else {
         "cmd"
     };
+    // For non-console terminals (mintty etc), try to find window via ancestor
+    let term_hwnd = if console_hwnd.is_some() {
+        console_hwnd
+    } else {
+        find_specific_ancestor(std::process::id(), "mintty.exe")
+            .and_then(|pid| find_window_by_pid(pid))
+    };
     TerminalInfo {
         terminal_type: t.into(),
         id: None,
         pid: Some(std::process::id()),
+        hwnd: term_hwnd,
     }
 }
 

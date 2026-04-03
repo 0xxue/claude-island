@@ -93,8 +93,8 @@ async fn respond_permission(
 }
 
 #[tauri::command(rename_all = "camelCase")]
-fn focus_agent_window(source: String, terminal_type: Option<String>, terminal_id: Option<String>, cwd: Option<String>) {
-    window_focus::focus_window(&source, terminal_type.as_deref(), terminal_id.as_deref(), cwd.as_deref());
+fn focus_agent_window(source: String, terminal_type: Option<String>, terminal_id: Option<String>, cwd: Option<String>, hwnd: Option<u64>) {
+    window_focus::focus_window(&source, terminal_type.as_deref(), terminal_id.as_deref(), cwd.as_deref(), hwnd);
 }
 
 // ═══ System Tray ═══

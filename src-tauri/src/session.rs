@@ -149,5 +149,6 @@ pub mod ws_server_types {
         pub terminal_type: String,
         pub id: Option<String>,
         pub pid: Option<u32>,
+        pub hwnd: Option<u64>,
     }
 }

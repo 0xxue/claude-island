@@ -311,6 +311,7 @@ function filterNotifications() {
 
 // ═══ Notifications (per-session persistent cards) ═══
 var sessionCards = {}; // sessionId → card element
+var sessionData = {};  // sessionId → latest event data (for Jump)
 
 function createNotification(data) {
   var agent = data.agent || 'claude';
@@ -318,6 +319,9 @@ function createNotification(data) {
   var eventType = data.event_type || data.type || 'tool_start';
   var tool = data.tool || '';
   var needsAction = (eventType === 'permission');
+
+  // Always store latest data for this session (Jump uses this)
+  sessionData[sessionId] = data;
 
   if (needsAction) pendingAgents.add(agent);
   updatePetState(eventType, tool);
@@ -458,16 +462,21 @@ function createNotification(data) {
   feed.insertBefore(card, feed.firstChild);
   sessionCards[sessionId] = card;
 
-  // Bind Jump button
+  // Bind Jump button — reads latest sessionData (not stale closure)
+  card.dataset.session = sessionId;
   card.querySelector('.jump-btn').addEventListener('click', function(e) {
     e.stopPropagation();
     sound.play('click');
+    var d = sessionData[card.dataset.session] || {};
+    var termPid = d.terminal ? (d.terminal.pid || null) : null;
+    console.log('[Jump] session=' + card.dataset.session + ' hwnd=' + (d.terminal && d.terminal.hwnd) + ' pid=' + termPid + ' cwd=' + d.cwd);
     if (window.islandAPI && window.islandAPI.focusAgent) {
       window.islandAPI.focusAgent(
-        data.source || 'cli',
-        data.terminal ? data.terminal.type : null,
-        data.terminal ? (data.terminal.id || String(data.terminal.pid || '')) : null,
-        data.cwd || null
+        d.source || 'cli',
+        d.terminal ? d.terminal.type : null,
+        d.terminal ? (d.terminal.id || String(d.terminal.pid || '')) : null,
+        d.cwd || null,
+        d.terminal ? (d.terminal.hwnd || null) : null
       );
     }
   });

@@ -54,13 +54,23 @@ pub async fn start(
                             // Don't show island for session lifecycle events
                         }
                         "permission" => {
-                            // Permission: emit to UI, hold connection, wait for response
                             let request_id = event.request_id.clone()
                                 .unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
 
-                            // Emit with request_id
                             let mut emit_event = event.clone();
                             emit_event.request_id = Some(request_id.clone());
+
+                            // Inject foreground HWND
+                            #[cfg(target_os = "windows")]
+                            {
+                                let fg = unsafe { windows::Win32::UI::WindowsAndMessaging::GetForegroundWindow() };
+                                if !fg.0.is_null() {
+                                    if let Some(ref mut t) = emit_event.terminal {
+                                        if t.hwnd.is_none() { t.hwnd = Some(fg.0 as u64); }
+                                    }
+                                }
+                            }
+
                             let _ = app.emit("claude-event", &emit_event);
 
                             // Wait for UI response
@@ -80,7 +90,29 @@ pub async fn start(
                             }
                         }
                         _ => {
-                            let _ = app.emit("claude-event", &event);
+                            // Capture foreground window HWND — that's the terminal
+                            #[cfg(target_os = "windows")]
+                            {
+                                let fg_hwnd = unsafe {
+                                    windows::Win32::UI::WindowsAndMessaging::GetForegroundWindow()
+                                };
+                                if !fg_hwnd.0.is_null() {
+                                    let mut emit_event = event.clone();
+                                    // Inject foreground HWND into terminal info
+                                    if let Some(ref mut t) = emit_event.terminal {
+                                        if t.hwnd.is_none() {
+                                            t.hwnd = Some(fg_hwnd.0 as u64);
+                                        }
+                                    }
+                                    let _ = app.emit("claude-event", &emit_event);
+                                } else {
+                                    let _ = app.emit("claude-event", &event);
+                                }
+                            }
+                            #[cfg(not(target_os = "windows"))]
+                            {
+                                let _ = app.emit("claude-event", &event);
+                            }
                         }
                     }
                 }

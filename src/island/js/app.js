@@ -190,7 +190,7 @@ new ResizeObserver(function() { if (state === 'expanded') updateHeight(); }).obs
 var clickCount = 0, clickTimer = null;
 
 island.addEventListener('click', function(e) {
-  if (e.target.closest('.btn') || e.target.closest('.icon-btn') || e.target.closest('.footer-link') || e.target.closest('.pet-option') || e.target.closest('.theme-option') || e.target.closest('.settings-popup') || e.target.closest('.agent-tab')) return;
+  if (e.target.closest('.btn') || e.target.closest('.icon-btn') || e.target.closest('.footer-link') || e.target.closest('.pet-option') || e.target.closest('.theme-option') || e.target.closest('.settings-popup') || e.target.closest('.agent-tab') || e.target.closest('.notif-card') || e.target.closest('.notification-feed')) return;
   if (wasDragging) return;
   if (Date.now() - stateTime < 400) return;
   clickCount++;

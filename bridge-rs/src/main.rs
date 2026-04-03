@@ -13,8 +13,18 @@ fn get_console_hwnd() -> Option<u64> {
     }
 }
 
+#[cfg(target_os = "windows")]
+fn get_foreground_hwnd() -> Option<u64> {
+    unsafe {
+        let hwnd = windows_sys::Win32::UI::WindowsAndMessaging::GetForegroundWindow();
+        if hwnd.is_null() { None } else { Some(hwnd as u64) }
+    }
+}
+
 #[cfg(not(target_os = "windows"))]
 fn get_console_hwnd() -> Option<u64> { None }
+#[cfg(not(target_os = "windows"))]
+fn get_foreground_hwnd() -> Option<u64> { None }
 
 #[cfg(target_os = "windows")]
 fn find_window_by_pid(target_pid: u32) -> Option<u64> {
@@ -324,11 +334,16 @@ fn detect_terminal() -> TerminalInfo {
     } else {
         "cmd"
     };
-    // For non-console terminals (mintty etc), try to find window via ancestor
+    // Find the actual terminal window HWND
     let term_hwnd = if console_hwnd.is_some() {
         console_hwnd
     } else {
+        // Try common terminal hosts in order
         find_specific_ancestor(std::process::id(), "mintty.exe")
+            .or_else(|| find_specific_ancestor(std::process::id(), "cmd.exe"))
+            .or_else(|| find_specific_ancestor(std::process::id(), "powershell.exe"))
+            .or_else(|| find_specific_ancestor(std::process::id(), "pwsh.exe"))
+            .or_else(|| find_specific_ancestor(std::process::id(), "windowsterminal.exe"))
             .and_then(|pid| find_window_by_pid(pid))
     };
     TerminalInfo {
@@ -391,6 +406,9 @@ fn read_stdin_with_timeout() -> String {
 
 #[tokio::main]
 async fn main() {
+    // Capture foreground window IMMEDIATELY — terminal is still foreground
+    let fg_hwnd = get_foreground_hwnd();
+
     let args = parse_args();
     let stdin_data = read_stdin_with_timeout();
 
@@ -400,6 +418,7 @@ async fn main() {
         .as_millis() as u64;
 
     let terminal = detect_terminal();
+    // No foreground fallback — it captures wrong windows (games etc)
     let source = detect_source();
 
     // Build event

@@ -312,6 +312,18 @@ function filterNotifications() {
 // ═══ Notifications (per-session persistent cards) ═══
 var sessionCards = {}; // sessionId → card element
 var sessionData = {};  // sessionId → latest event data (for Jump)
+var sessionNames = {}; // sessionId → display name (e.g. "Claude 1", "Claude 2")
+var agentCounts = {};  // agent → count (for numbering)
+
+function getSessionName(sessionId, agent) {
+  if (sessionNames[sessionId]) return sessionNames[sessionId];
+  var label = AGENT_LABELS[agent] || agent;
+  if (!agentCounts[agent]) agentCounts[agent] = 0;
+  agentCounts[agent]++;
+  var name = agentCounts[agent] > 1 ? label + ' ' + agentCounts[agent] : label;
+  sessionNames[sessionId] = name;
+  return name;
+}
 
 function createNotification(data) {
   var agent = data.agent || 'claude';
@@ -320,8 +332,12 @@ function createNotification(data) {
   var tool = data.tool || '';
   var needsAction = (eventType === 'permission');
 
-  // Always store latest data for this session (Jump uses this)
+  // Store session data — but preserve first valid hwnd (terminal doesn't change mid-session)
+  var prevHwnd = sessionData[sessionId] && sessionData[sessionId].terminal && sessionData[sessionId].terminal.hwnd;
   sessionData[sessionId] = data;
+  if (prevHwnd && data.terminal) {
+    data.terminal.hwnd = prevHwnd; // keep the first valid hwnd
+  }
 
   if (needsAction) pendingAgents.add(agent);
   updatePetState(eventType, tool);
@@ -334,7 +350,7 @@ function createNotification(data) {
     setState('expanded');
   }
 
-  var agentLabel = AGENT_LABELS[agent] || agent;
+  var agentLabel = getSessionName(sessionId, agent);
   var agentPet = AGENT_PETS[agent] || 'octopus';
 
   // Build status text

@@ -16,6 +16,7 @@ function claudeHooks() {
   return {
     PreToolUse: [{ matcher: '', hooks: [{ type: 'command', command: `${b} --event tool_start` }] }],
     PostToolUse: [{ matcher: '', hooks: [{ type: 'command', command: `${b} --event tool_done` }] }],
+    PermissionRequest: [{ matcher: '', hooks: [{ type: 'command', command: `${b} --event permission` }] }],
     Stop: [{ matcher: '', hooks: [{ type: 'command', command: `${b} --event stop` }] }],
     Notification: [{ matcher: '', hooks: [{ type: 'command', command: `${b} --event notification` }] }],
     SessionStart: [{ matcher: '', hooks: [{ type: 'command', command: `${b} --event start` }] }],

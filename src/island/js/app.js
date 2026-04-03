@@ -284,9 +284,12 @@ function filterNotifications() {
   });
 }
 
-// ═══ Notifications ═══
+// ═══ Notifications (per-session persistent cards) ═══
+var sessionCards = {}; // sessionId → card element
+
 function createNotification(data) {
   var agent = data.agent || 'claude';
+  var sessionId = data.sessionId || data.session_id || agent;
   var eventType = data.event_type || data.type || 'tool_start';
   var tool = data.tool || '';
   var needsAction = (eventType === 'permission');
@@ -296,58 +299,121 @@ function createNotification(data) {
   sound.playForEvent(eventType);
   if (state === 'circle') setState('pill');
 
-  var card = document.createElement('div');
-  card.className = 'notif-card';
-  card.dataset.agent = agent;
-
   var agentLabel = AGENT_LABELS[agent] || agent;
   var agentPet = AGENT_PETS[agent] || 'octopus';
+
+  // Build status text
+  var statusText = '';
+  var statusIcon = '';
+  if (eventType === 'tool_start') {
+    statusIcon = '⚡';
+    statusText = (tool || 'Working') + '...';
+    if (data.file) statusText += ' ' + shortPath(data.file);
+    else if (data.command) statusText += ' $ ' + data.command;
+  } else if (eventType === 'tool_done') {
+    statusIcon = '✓';
+    statusText = (tool || 'Task') + ' done';
+    if (data.file) statusText += ' ' + shortPath(data.file);
+  } else if (eventType === 'permission') {
+    statusIcon = '🔐';
+    statusText = 'Needs approval: ' + (tool || 'tool');
+    if (data.file) statusText += ' on ' + shortPath(data.file);
+  } else if (eventType === 'stop') {
+    statusIcon = '💬';
+    statusText = data.message || 'Waiting for input...';
+  } else if (eventType === 'notification') {
+    statusIcon = '📢';
+    statusText = data.message || data.title || 'Notification';
+  } else {
+    statusIcon = '•';
+    statusText = eventType;
+  }
+
+  // Existing card? Update it
+  var card = sessionCards[sessionId];
+  if (card && feed.contains(card)) {
+    // Update status line
+    var bodyEl = card.querySelector('.notif-body');
+    if (bodyEl) bodyEl.innerHTML = '<span class="status-icon">' + statusIcon + '</span> ' + statusText;
+
+    // Update badge
+    var badge = card.querySelector('.action-badge');
+    if (badge) {
+      if (needsAction) {
+        var actionType = tool === 'Bash' ? 'execute' : tool === 'Write' ? 'write' : 'modify';
+        badge.className = 'action-badge ' + actionType;
+        badge.textContent = actionType.charAt(0).toUpperCase() + actionType.slice(1);
+      } else {
+        badge.className = 'action-badge info';
+        badge.textContent = eventType === 'tool_done' ? 'Done' : eventType === 'stop' ? 'Waiting' : 'Active';
+      }
+    }
+
+    // Add/remove action buttons for permission
+    var actionsEl = card.querySelector('.notif-actions');
+    if (needsAction && !actionsEl) {
+      actionsEl = document.createElement('div');
+      actionsEl.className = 'notif-actions';
+      actionsEl.innerHTML = '<button class="btn btn-deny action-btn" data-action="deny">Deny</button><button class="btn btn-once action-btn" data-action="allow">Allow Once</button><button class="btn btn-all action-btn" data-action="allow_all">Allow All</button><button class="btn btn-bypass action-btn" data-action="bypass">Bypass</button>';
+      card.appendChild(actionsEl);
+      bindActionButtons(card, agent, data);
+      notifCount++;
+      updatePillStatus();
+    } else if (!needsAction && actionsEl) {
+      actionsEl.remove();
+    }
+
+    // Code preview
+    var codeEl = card.querySelector('.notif-code');
+    if (data.code && !codeEl) {
+      var codeHtml = '<div class="notif-code"><div class="code-header"><span class="code-filename">' + (data.code.file || '') + '</span>';
+      if (data.code.tag) codeHtml += '<span class="code-tag">' + data.code.tag + '</span>';
+      codeHtml += '</div><div class="code-body">';
+      if (data.code.lines) data.code.lines.forEach(function(l) { codeHtml += '<div class="code-line ' + (l.type || 'normal') + '">' + (l.text || l) + '</div>'; });
+      codeHtml += '</div></div>';
+      var temp = document.createElement('div');
+      temp.innerHTML = codeHtml;
+      var bodyNext = card.querySelector('.notif-body');
+      if (bodyNext) bodyNext.after(temp.firstChild);
+    } else if (!data.code && codeEl) {
+      codeEl.remove();
+    }
+
+    if (state === 'expanded') updateHeight();
+    if (needsAction && state !== 'expanded') setState('expanded');
+    return;
+  }
+
+  // New card
+  card = document.createElement('div');
+  card.className = 'notif-card';
+  card.dataset.agent = agent;
+  card.dataset.session = sessionId;
 
   var h = '<div class="notif-header">';
   h += '<span class="agent-badge"><span class="agent-pet-icon"><div class="pixel-pet ' + agentPet + ' tiny"><div class="sprite"></div></div></span> ' + agentLabel + '</span>';
 
-  if (eventType === 'permission') {
+  if (needsAction) {
     var actionType = tool === 'Bash' ? 'execute' : tool === 'Write' ? 'write' : 'modify';
     h += '<span class="action-badge ' + actionType + '">' + actionType.charAt(0).toUpperCase() + actionType.slice(1) + '</span>';
   } else {
-    h += '<span class="action-badge info">Info</span>';
+    h += '<span class="action-badge info">Active</span>';
   }
 
   h += '<button class="btn-jump jump-btn" title="Jump to ' + agentLabel + '">Jump ↗</button>';
   h += '</div>';
+  h += '<div class="notif-body"><span class="status-icon">' + statusIcon + '</span> ' + statusText + '</div>';
 
-  var bodyText = '';
-  if (eventType === 'permission') {
-    bodyText = 'Requests approval to use <strong>' + (tool || 'tool') + '</strong>';
-    if (data.file) bodyText += ' on <code>' + shortPath(data.file) + '</code>';
-  } else if (eventType === 'tool_start') {
-    bodyText = (tool || 'Working') + '...';
-    if (data.file) bodyText += ' <code>' + shortPath(data.file) + '</code>';
-    else if (data.command) bodyText += ' <code>$ ' + data.command + '</code>';
-  } else if (eventType === 'tool_done') {
-    bodyText = (tool || 'Task') + ' completed ✓';
-    if (data.file) bodyText += ' <code>' + shortPath(data.file) + '</code>';
-  } else if (eventType === 'stop') {
-    bodyText = data.message || 'Waiting for your input...';
-  } else {
-    bodyText = data.message || data.title || eventType;
-  }
-  h += '<div class="notif-body">' + bodyText + '</div>';
-
+  // Code preview
   if (data.code) {
     h += '<div class="notif-code"><div class="code-header"><span class="code-filename">' + (data.code.file || '') + '</span>';
     if (data.code.tag) h += '<span class="code-tag">' + data.code.tag + '</span>';
     h += '</div><div class="code-body">';
-    if (data.code.lines) {
-      data.code.lines.forEach(function(l) {
-        var type = l.type || 'normal';
-        var text = l.text || l;
-        h += '<div class="code-line ' + type + '">' + text + '</div>';
-      });
-    }
+    if (data.code.lines) data.code.lines.forEach(function(l) { h += '<div class="code-line ' + (l.type || 'normal') + '">' + (l.text || l) + '</div>'; });
     h += '</div></div>';
   }
 
+  // Action buttons for permission
   if (needsAction) {
     h += '<div class="notif-actions">';
     h += '<button class="btn btn-deny action-btn" data-action="deny">Deny</button>';
@@ -360,11 +426,9 @@ function createNotification(data) {
 
   card.innerHTML = h;
   feed.insertBefore(card, feed.firstChild);
-  updatePillStatus();
-  updateAgentTabs();
-  filterNotifications();
-  if (state === 'expanded') updateHeight();
+  sessionCards[sessionId] = card;
 
+  // Bind Jump button
   card.querySelector('.jump-btn').addEventListener('click', function(e) {
     e.stopPropagation();
     sound.play('click');
@@ -377,49 +441,36 @@ function createNotification(data) {
     }
   });
 
-  if (needsAction) {
-    card.querySelectorAll('.action-btn').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        sound.play('complete');
-        updatePetState('complete');
-        var decision = btn.dataset.action;
-        if (window.islandAPI && window.islandAPI.respondPermission && data.requestId) {
-          window.islandAPI.respondPermission(data.requestId, decision);
-        }
-        btn.textContent = '✓';
-        btn.style.opacity = '0.5';
-        btn.style.pointerEvents = 'none';
-        setTimeout(function() { removeCard(card, agent); }, 600);
-      });
-    });
-  } else {
-    setTimeout(function() { removeCard(card, agent, true); }, 8000);
-  }
+  // Bind action buttons
+  if (needsAction) bindActionButtons(card, agent, data);
 
-  if (needsAction && state !== 'expanded') {
-    setState('expanded');
-  }
+  updatePillStatus();
+  updateAgentTabs();
+  filterNotifications();
+  if (state === 'expanded') updateHeight();
+  if (needsAction && state !== 'expanded') setState('expanded');
 }
 
-function removeCard(card, agent, isInfo) {
-  if (!feed.contains(card)) return;
-  card.style.height = card.offsetHeight + 'px';
-  void card.offsetHeight;
-  card.classList.add('card-out');
-  setTimeout(function() {
-    if (!feed.contains(card)) return;
-    card.remove();
-    if (!isInfo) notifCount--;
-    var still = false;
-    feed.querySelectorAll('.notif-card').forEach(function(c) {
-      if (c.dataset.agent === agent && c.querySelector('.action-btn')) still = true;
+function bindActionButtons(card, agent, data) {
+  card.querySelectorAll('.action-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      sound.play('complete');
+      updatePetState('complete');
+      if (window.islandAPI && window.islandAPI.respondPermission && data.requestId) {
+        window.islandAPI.respondPermission(data.requestId, btn.dataset.action);
+      }
+      // Remove action buttons after approval
+      var actionsEl = card.querySelector('.notif-actions');
+      if (actionsEl) actionsEl.remove();
+      notifCount--;
+      var badge = card.querySelector('.action-badge');
+      if (badge) { badge.className = 'action-badge info'; badge.textContent = 'Done'; }
+      pendingAgents.delete(agent);
+      updatePillStatus();
+      if (state === 'expanded') updateHeight();
     });
-    if (!still) pendingAgents.delete(agent);
-    updatePillStatus();
-    updateAgentTabs();
-    if (state === 'expanded') updateHeight();
-  }, 300);
+  });
 }
 
 function shortPath(p) {

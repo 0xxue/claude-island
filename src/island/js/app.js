@@ -390,9 +390,8 @@ function createNotification(data) {
       bindActionButtons(card, agent, data);
       notifCount++;
       updatePillStatus();
-    } else if (!needsAction && actionsEl) {
-      actionsEl.remove();
     }
+    // Don't auto-remove action buttons — only user click removes them
 
     // Code preview
     var codeEl = card.querySelector('.notif-code');
@@ -463,6 +462,7 @@ function createNotification(data) {
   card.querySelector('.jump-btn').addEventListener('click', function(e) {
     e.stopPropagation();
     sound.play('click');
+    console.log('[Jump] source=' + (data.source || 'cli') + ' terminal=', data.terminal);
     if (window.islandAPI && window.islandAPI.focusAgent) {
       window.islandAPI.focusAgent(
         data.source || 'cli',
@@ -488,8 +488,11 @@ function bindActionButtons(card, agent, data) {
       e.stopPropagation();
       sound.play('complete');
       updatePetState('complete');
+      console.log('[Approve] requestId=' + data.requestId + ' decision=' + btn.dataset.action + ' hasAPI=' + !!(window.islandAPI && window.islandAPI.respondPermission));
       if (window.islandAPI && window.islandAPI.respondPermission && data.requestId) {
-        window.islandAPI.respondPermission(data.requestId, btn.dataset.action);
+        window.islandAPI.respondPermission(data.requestId, btn.dataset.action)
+          .then(function() { console.log('[Approve] sent OK'); })
+          .catch(function(e) { console.error('[Approve] error:', e); });
       }
       // Remove action buttons after approval
       var actionsEl = card.querySelector('.notif-actions');

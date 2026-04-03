@@ -82,7 +82,13 @@ pub fn focus_window(source: &str, terminal_type: Option<&str>, terminal_id: Opti
             }
         }
         (_, Some("cursor")) => find(None, Some("Cursor")),
-        (_, Some("git-bash")) => find(None, Some("MINGW")),
+        (_, Some("git-bash")) => {
+            find(None, Some("MINGW"))
+                .or_else(|| find(None, Some("bash")))
+                .or_else(|| find(None, Some("Git Bash")))
+                .or_else(|| find(None, Some("mintty")))
+                .or_else(|| find(None, Some("Windows Terminal")))
+        }
         ("cli", _) | (_, Some("cmd")) | (_, Some("powershell")) => {
             find(None, Some("Windows Terminal"))
                 .or_else(|| find(None, Some("Windows PowerShell")))

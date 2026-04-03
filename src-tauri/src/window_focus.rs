@@ -2,6 +2,7 @@
 pub fn focus_window(source: &str, terminal_type: Option<&str>, terminal_id: Option<&str>, cwd: Option<&str>) {
     use windows::Win32::Foundation::{BOOL, HWND, LPARAM};
     use windows::Win32::UI::WindowsAndMessaging::*;
+    use windows::Win32::System::Threading::*;
     use std::ffi::OsString;
     use std::os::windows::ffi::OsStringExt;
 
@@ -59,6 +60,44 @@ pub fn focus_window(source: &str, terminal_type: Option<&str>, terminal_id: Opti
         }
     }
 
+    /// Walk up the process tree from a PID, find the first process with a visible window
+    fn find_ancestor_window(start_pid: u32) -> Option<HWND> {
+        let mut pid = start_pid;
+        for _ in 0..10 { // max 10 levels up
+            if let Some(hwnd) = find(Some(pid), None) {
+                return Some(hwnd);
+            }
+            // Get parent PID
+            match get_parent_pid(pid) {
+                Some(ppid) if ppid != pid && ppid != 0 => pid = ppid,
+                _ => break,
+            }
+        }
+        None
+    }
+
+    fn get_parent_pid(pid: u32) -> Option<u32> {
+        use windows::Win32::System::Diagnostics::ToolHelp::*;
+        unsafe {
+            let snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0).ok()?;
+            let mut entry = PROCESSENTRY32W::default();
+            entry.dwSize = std::mem::size_of::<PROCESSENTRY32W>() as u32;
+            if Process32FirstW(snap, &mut entry).is_ok() {
+                loop {
+                    if entry.th32ProcessID == pid {
+                        let _ = windows::Win32::Foundation::CloseHandle(snap);
+                        return Some(entry.th32ParentProcessID);
+                    }
+                    if Process32NextW(snap, &mut entry).is_err() {
+                        break;
+                    }
+                }
+            }
+            let _ = windows::Win32::Foundation::CloseHandle(snap);
+        }
+        None
+    }
+
     fn activate(hwnd: HWND) {
         unsafe {
             let _ = ShowWindow(hwnd, SW_RESTORE);
@@ -67,7 +106,29 @@ pub fn focus_window(source: &str, terminal_type: Option<&str>, terminal_id: Opti
         }
     }
 
-    // Strategy 1: search by cwd directory name in window title (most reliable)
+    // Strategy 1: PID-based — walk up from bridge PID to find terminal window
+    if let Some(id) = terminal_id {
+        if let Ok(pid) = id.parse::<u32>() {
+            if let Some(hwnd) = find_ancestor_window(pid) {
+                activate(hwnd);
+                return;
+            }
+        }
+    }
+
+    // Strategy 2: VSCODE_PID — direct PID match
+    if let (_, Some("vscode")) | ("claude-vscode", _) = (source, terminal_type) {
+        if let Some(id) = terminal_id {
+            if let Ok(pid) = id.parse::<u32>() {
+                if let Some(hwnd) = find(Some(pid), None) {
+                    activate(hwnd);
+                    return;
+                }
+            }
+        }
+    }
+
+    // Strategy 3: cwd directory name in window title
     if let Some(cwd) = cwd {
         let dir_name = cwd.replace('\\', "/").split('/').last().unwrap_or("").to_string();
         if !dir_name.is_empty() {
@@ -78,34 +139,20 @@ pub fn focus_window(source: &str, terminal_type: Option<&str>, terminal_id: Opti
         }
     }
 
-    // Strategy 2: search by terminal type
+    // Strategy 4: terminal type name matching
     let hwnd = match (source, terminal_type) {
         (_, Some("windows-terminal")) => find(None, Some("Windows Terminal")),
-        (_, Some("vscode")) | ("claude-vscode", _) => {
-            if let Some(id) = terminal_id {
-                if let Ok(pid) = id.parse::<u32>() {
-                    find(Some(pid), None)
-                } else {
-                    find(None, Some("Visual Studio Code"))
-                }
-            } else {
-                find(None, Some("Visual Studio Code"))
-            }
-        }
+        (_, Some("vscode")) => find(None, Some("Visual Studio Code")),
         (_, Some("cursor")) => find(None, Some("Cursor")),
-        (_, Some("mintty")) | (_, Some("git-bash")) => {
+        (_, Some("mintty")) => {
             find(None, Some("MINGW"))
                 .or_else(|| find(None, Some("bash")))
                 .or_else(|| find(None, Some("mintty")))
         }
-        ("cli", _) | (_, Some("cmd")) | (_, Some("powershell")) => {
-            find(None, Some("Windows Terminal"))
-                .or_else(|| find(None, Some("Windows PowerShell")))
-                .or_else(|| find(None, Some("cmd.exe")))
-        }
         _ => {
             find(None, Some("Windows Terminal"))
                 .or_else(|| find(None, Some("Visual Studio Code")))
+                .or_else(|| find(None, Some("cmd")))
         }
     };
 

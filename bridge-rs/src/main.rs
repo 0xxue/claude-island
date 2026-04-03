@@ -166,9 +166,9 @@ fn detect_terminal() -> TerminalInfo {
         };
     }
 
-    // Fallback: standalone terminal (mintty for git-bash, or cmd/powershell)
+    // Fallback: standalone terminal
     let t = if env::var("MSYSTEM").is_ok() {
-        "mintty" // standalone Git Bash = mintty window
+        "mintty"
     } else if env::var("PSModulePath").is_ok() {
         "powershell"
     } else {

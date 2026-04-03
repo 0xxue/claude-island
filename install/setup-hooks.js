@@ -111,17 +111,9 @@ function setup() {
     console.log('  Claude Code not found, skipping');
   }
 
-  // Codex CLI
+  // Codex CLI — no native hook support
   if (commandExists('codex')) {
-    console.log('✓ Codex CLI detected');
-    const settings = loadJson(CODEX_HOOKS);
-    removeOldHooks(settings);
-    installHooks(settings, codexHooks());
-    saveJson(CODEX_HOOKS, settings);
-    console.log('  → ' + CODEX_HOOKS);
-    installed++;
-  } else {
-    console.log('  Codex CLI not found, skipping');
+    console.log('⚠ Codex CLI detected but has NO hook system — cannot integrate');
   }
 
   // Gemini CLI

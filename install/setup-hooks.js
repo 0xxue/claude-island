@@ -7,7 +7,7 @@ const { execSync } = require('child_process');
 // ═══ Paths ═══
 const BRIDGE_PATH = path.resolve(__dirname, '..', 'bridge-rs', 'target', 'release', 'island-bridge.exe').replace(/\\/g, '/');
 const CLAUDE_SETTINGS = path.join(os.homedir(), '.claude', 'settings.json');
-const CODEX_HOOKS = path.join(os.homedir(), '.codex', 'hooks.json');
+const CODEX_CONFIG = path.join(os.homedir(), '.codex', 'config.toml');
 const GEMINI_SETTINGS = path.join(os.homedir(), '.gemini', 'settings.json');
 
 // ═══ Hook Configs ═══
@@ -111,14 +111,24 @@ function setup() {
     console.log('  Claude Code not found, skipping');
   }
 
-  // Codex CLI
+  // Codex CLI — hooks disabled on Windows, use notify in config.toml
   if (commandExists('codex')) {
-    console.log('✓ Codex CLI detected');
-    const settings = loadJson(CODEX_HOOKS);
-    removeOldHooks(settings);
-    installHooks(settings, codexHooks());
-    saveJson(CODEX_HOOKS, settings);
-    console.log('  → ' + CODEX_HOOKS);
+    console.log('✓ Codex CLI detected (Windows: using notify in config.toml)');
+    const tomlPath = CODEX_CONFIG;
+    let toml = fs.existsSync(tomlPath) ? fs.readFileSync(tomlPath, 'utf8') : '';
+    // Remove old notify line
+    toml = toml.replace(/^notify\s*=.*$/m, '').replace(/\n{3,}/g, '\n\n');
+    // Add notify after first line (or at top)
+    const notifyLine = `notify = ["${BRIDGE_PATH}", "--agent", "codex", "--event", "stop"]`;
+    const lines = toml.split('\n');
+    // Insert after first non-empty line
+    let insertIdx = 0;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].trim()) { insertIdx = i + 1; break; }
+    }
+    lines.splice(insertIdx, 0, notifyLine);
+    fs.writeFileSync(tomlPath, lines.join('\n'));
+    console.log('  → ' + tomlPath);
     installed++;
   } else {
     console.log('  Codex CLI not found, skipping');

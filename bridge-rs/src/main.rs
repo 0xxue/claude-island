@@ -220,12 +220,15 @@ struct StdinData {
 struct Args {
     event_type: String,
     agent: String,
+    /// Codex notify passes JSON as last CLI arg (not stdin)
+    cli_json: Option<String>,
 }
 
 fn parse_args() -> Args {
     let args: Vec<String> = env::args().collect();
     let mut event_type = "stop".to_string();
     let mut agent = "claude".to_string();
+    let mut cli_json = None;
 
     let mut i = 1;
     while i < args.len() {
@@ -237,6 +240,11 @@ fn parse_args() -> Args {
             "--agent" if i + 1 < args.len() => {
                 agent = args[i + 1].clone();
                 i += 2;
+            }
+            s if s.starts_with('{') => {
+                // Codex notify: JSON passed as CLI argument
+                cli_json = Some(s.to_string());
+                i += 1;
             }
             _ => { i += 1; }
         }
@@ -258,7 +266,7 @@ fn parse_args() -> Args {
         other => other.into(),
     };
 
-    Args { event_type, agent }
+    Args { event_type, agent, cli_json }
 }
 
 // ═══ Terminal Detection ═══
@@ -410,7 +418,12 @@ async fn main() {
     let fg_hwnd = get_foreground_hwnd();
 
     let args = parse_args();
-    let stdin_data = read_stdin_with_timeout();
+    // Codex notify: JSON comes as CLI arg. Claude/Gemini: JSON comes from stdin.
+    let stdin_data = if let Some(ref json) = args.cli_json {
+        json.clone()
+    } else {
+        read_stdin_with_timeout()
+    };
 
     let now = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)

@@ -3,12 +3,15 @@ use parking_lot::RwLock;
 use tauri::{AppHandle, Manager};
 
 mod config;
+mod permission;
 mod session;
+mod window_focus;
 mod ws_server;
 
 pub struct AppState {
     pub sessions: Arc<RwLock<session::SessionManager>>,
     pub config: Arc<RwLock<config::IslandConfig>>,
+    pub perm_router: Arc<permission::PermissionRouter>,
 }
 
 // ═══ Tauri Commands ═══
@@ -79,6 +82,21 @@ async fn get_sessions(state: tauri::State<'_, AppState>) -> Result<Vec<session::
     Ok(state.sessions.read().list())
 }
 
+#[tauri::command]
+async fn respond_permission(
+    state: tauri::State<'_, AppState>,
+    request_id: String,
+    decision: String,
+    reason: Option<String>,
+) -> Result<(), String> {
+    state.perm_router.respond(&request_id, &decision, reason.as_deref())
+}
+
+#[tauri::command]
+fn focus_agent_window(source: String, terminal_type: Option<String>, terminal_id: Option<String>) {
+    window_focus::focus_window(&source, terminal_type.as_deref(), terminal_id.as_deref());
+}
+
 // ═══ System Tray ═══
 
 fn setup_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
@@ -116,6 +134,7 @@ pub fn run() {
     let app_state = AppState {
         sessions: Arc::new(RwLock::new(session::SessionManager::new())),
         config: Arc::new(RwLock::new(config::IslandConfig::default())),
+        perm_router: Arc::new(permission::PermissionRouter::new()),
     };
 
     tauri::Builder::default()
@@ -131,8 +150,9 @@ pub fn run() {
             // Spawn WebSocket server
             let handle = app.handle().clone();
             let sessions = app.state::<AppState>().sessions.clone();
+            let perm_router = app.state::<AppState>().perm_router.clone();
             tauri::async_runtime::spawn(async move {
-                ws_server::start(handle, sessions).await;
+                ws_server::start(handle, sessions, perm_router).await;
             });
 
             // Start as circle (56x56), centered at top
@@ -166,6 +186,8 @@ pub fn run() {
             get_config,
             save_config,
             get_sessions,
+            respond_permission,
+            focus_agent_window,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

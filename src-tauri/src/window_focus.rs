@@ -1,5 +1,5 @@
 #[cfg(target_os = "windows")]
-pub fn focus_window(source: &str, terminal_type: Option<&str>, terminal_id: Option<&str>) {
+pub fn focus_window(source: &str, terminal_type: Option<&str>, terminal_id: Option<&str>, cwd: Option<&str>) {
     use windows::Win32::Foundation::{BOOL, HWND, LPARAM};
     use windows::Win32::UI::WindowsAndMessaging::*;
     use std::ffi::OsString;
@@ -67,7 +67,18 @@ pub fn focus_window(source: &str, terminal_type: Option<&str>, terminal_id: Opti
         }
     }
 
-    // Find window based on terminal info
+    // Strategy 1: search by cwd directory name in window title (most reliable)
+    if let Some(cwd) = cwd {
+        let dir_name = cwd.replace('\\', "/").split('/').last().unwrap_or("").to_string();
+        if !dir_name.is_empty() {
+            if let Some(hwnd) = find(None, Some(&dir_name)) {
+                activate(hwnd);
+                return;
+            }
+        }
+    }
+
+    // Strategy 2: search by terminal type
     let hwnd = match (source, terminal_type) {
         (_, Some("windows-terminal")) => find(None, Some("Windows Terminal")),
         (_, Some("vscode")) | ("claude-vscode", _) => {
@@ -82,12 +93,10 @@ pub fn focus_window(source: &str, terminal_type: Option<&str>, terminal_id: Opti
             }
         }
         (_, Some("cursor")) => find(None, Some("Cursor")),
-        (_, Some("git-bash")) => {
+        (_, Some("mintty")) | (_, Some("git-bash")) => {
             find(None, Some("MINGW"))
                 .or_else(|| find(None, Some("bash")))
-                .or_else(|| find(None, Some("Git Bash")))
                 .or_else(|| find(None, Some("mintty")))
-                .or_else(|| find(None, Some("Windows Terminal")))
         }
         ("cli", _) | (_, Some("cmd")) | (_, Some("powershell")) => {
             find(None, Some("Windows Terminal"))
@@ -106,6 +115,6 @@ pub fn focus_window(source: &str, terminal_type: Option<&str>, terminal_id: Opti
 }
 
 #[cfg(not(target_os = "windows"))]
-pub fn focus_window(_source: &str, _terminal_type: Option<&str>, _terminal_id: Option<&str>) {
+pub fn focus_window(_source: &str, _terminal_type: Option<&str>, _terminal_id: Option<&str>, _cwd: Option<&str>) {
     // macOS/Linux: TODO
 }

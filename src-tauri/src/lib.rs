@@ -82,7 +82,7 @@ async fn get_sessions(state: tauri::State<'_, AppState>) -> Result<Vec<session::
     Ok(state.sessions.read().list())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "camelCase")]
 async fn respond_permission(
     state: tauri::State<'_, AppState>,
     request_id: String,
@@ -92,9 +92,9 @@ async fn respond_permission(
     state.perm_router.respond(&request_id, &decision, reason.as_deref())
 }
 
-#[tauri::command]
-fn focus_agent_window(source: String, terminal_type: Option<String>, terminal_id: Option<String>) {
-    window_focus::focus_window(&source, terminal_type.as_deref(), terminal_id.as_deref());
+#[tauri::command(rename_all = "camelCase")]
+fn focus_agent_window(source: String, terminal_type: Option<String>, terminal_id: Option<String>, cwd: Option<String>) {
+    window_focus::focus_window(&source, terminal_type.as_deref(), terminal_id.as_deref(), cwd.as_deref());
 }
 
 // ═══ System Tray ═══

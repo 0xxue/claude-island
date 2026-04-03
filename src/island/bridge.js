@@ -34,8 +34,8 @@
     respondPermission: function(requestId, decision, reason) {
       return invoke('respond_permission', { requestId: requestId, decision: decision, reason: reason || null });
     },
-    focusAgent: function(source, terminalType, terminalId) {
-      invoke('focus_agent_window', { source: source || 'cli', terminalType: terminalType || null, terminalId: terminalId || null });
+    focusAgent: function(source, terminalType, terminalId, cwd) {
+      invoke('focus_agent_window', { source: source || 'cli', terminalType: terminalType || null, terminalId: terminalId || null, cwd: cwd || null });
     },
     focusClaudeWindow: function(source) {
       invoke('focus_agent_window', { source: source || 'cli', terminalType: null, terminalId: null });

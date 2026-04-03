@@ -462,12 +462,12 @@ function createNotification(data) {
   card.querySelector('.jump-btn').addEventListener('click', function(e) {
     e.stopPropagation();
     sound.play('click');
-    console.log('[Jump] source=' + (data.source || 'cli') + ' terminal=', data.terminal);
     if (window.islandAPI && window.islandAPI.focusAgent) {
       window.islandAPI.focusAgent(
         data.source || 'cli',
         data.terminal ? data.terminal.type : null,
-        data.terminal ? (data.terminal.id || String(data.terminal.pid || '')) : null
+        data.terminal ? (data.terminal.id || String(data.terminal.pid || '')) : null,
+        data.cwd || null
       );
     }
   });
@@ -488,21 +488,19 @@ function bindActionButtons(card, agent, data) {
       e.stopPropagation();
       sound.play('complete');
       updatePetState('complete');
-      console.log('[Approve] requestId=' + data.requestId + ' decision=' + btn.dataset.action + ' hasAPI=' + !!(window.islandAPI && window.islandAPI.respondPermission));
-      if (window.islandAPI && window.islandAPI.respondPermission && data.requestId) {
-        window.islandAPI.respondPermission(data.requestId, btn.dataset.action)
-          .then(function() { console.log('[Approve] sent OK'); })
-          .catch(function(e) { console.error('[Approve] error:', e); });
-      }
-      // Remove action buttons after approval
+      // Remove buttons immediately (UI feedback first)
       var actionsEl = card.querySelector('.notif-actions');
       if (actionsEl) actionsEl.remove();
       notifCount--;
       var badge = card.querySelector('.action-badge');
-      if (badge) { badge.className = 'action-badge info'; badge.textContent = 'Done'; }
+      if (badge) { badge.className = 'action-badge info'; badge.textContent = btn.dataset.action === 'deny' ? 'Denied' : 'Allowed'; }
       pendingAgents.delete(agent);
       updatePillStatus();
       if (state === 'expanded') updateHeight();
+      // Send decision to Rust → bridge → agent
+      if (window.islandAPI && window.islandAPI.respondPermission && data.requestId) {
+        window.islandAPI.respondPermission(data.requestId, btn.dataset.action);
+      }
     });
   });
 }

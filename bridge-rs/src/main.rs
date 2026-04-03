@@ -116,7 +116,8 @@ fn parse_args() -> Args {
 // ═══ Terminal Detection ═══
 
 fn detect_terminal() -> TerminalInfo {
-    // Priority: most specific first
+    // Priority: host window first, then shell type
+    // WT_SESSION = Windows Terminal (even if shell is git-bash/powershell/cmd)
     if let Ok(session) = env::var("WT_SESSION") {
         return TerminalInfo {
             terminal_type: "windows-terminal".into(),
@@ -124,8 +125,8 @@ fn detect_terminal() -> TerminalInfo {
             pid: None,
         };
     }
+    // VSCODE_PID = VS Code / Cursor integrated terminal
     if let Ok(pid) = env::var("VSCODE_PID") {
-        // Check if it's Cursor (VS Code fork)
         let t = if env::var("CURSOR_TRACE_DIR").is_ok() { "cursor" } else { "vscode" };
         return TerminalInfo {
             terminal_type: t.into(),
@@ -133,13 +134,9 @@ fn detect_terminal() -> TerminalInfo {
             pid: None,
         };
     }
-    if env::var("MSYSTEM").is_ok() {
-        return TerminalInfo {
-            terminal_type: "git-bash".into(),
-            id: None,
-            pid: Some(std::process::id()),
-        };
-    }
+    // MSYSTEM = Git Bash shell, but might be standalone mintty
+    // Don't return "git-bash" as terminal type — it's a shell, not a window
+    // Fall through to check other host windows
     if let Ok(tmux) = env::var("TMUX") {
         return TerminalInfo {
             terminal_type: "tmux".into(),
@@ -169,8 +166,14 @@ fn detect_terminal() -> TerminalInfo {
         };
     }
 
-    // Fallback
-    let t = if env::var("PSModulePath").is_ok() { "powershell" } else { "cmd" };
+    // Fallback: standalone terminal (mintty for git-bash, or cmd/powershell)
+    let t = if env::var("MSYSTEM").is_ok() {
+        "mintty" // standalone Git Bash = mintty window
+    } else if env::var("PSModulePath").is_ok() {
+        "powershell"
+    } else {
+        "cmd"
+    };
     TerminalInfo {
         terminal_type: t.into(),
         id: None,

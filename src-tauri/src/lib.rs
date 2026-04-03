@@ -13,18 +13,26 @@ pub struct AppState {
 
 // ═══ Tauri Commands ═══
 
-/// Resize window to fit island + re-center at top
+#[tauri::command]
+fn drag_window(window: tauri::WebviewWindow, dx: i32, dy: i32) {
+    if let Ok(pos) = window.outer_position() {
+        let _ = window.set_position(tauri::PhysicalPosition::new(pos.x + dx, pos.y + dy));
+    }
+}
+
+/// Resize window to fit island + re-center at top.
+/// Sets position FIRST (to new centered pos), then size — so expansion looks centered.
 #[tauri::command]
 fn resize_island(window: tauri::WebviewWindow, w: f64, h: f64) {
-    // Use LogicalSize — Tauri handles DPI scaling automatically
-    let _ = window.set_size(tauri::LogicalSize::new(w, h));
-    // Re-center horizontally at top of screen
+    // Calculate centered position first
     if let Ok(Some(monitor)) = window.current_monitor() {
         let scale = window.scale_factor().unwrap_or(1.0);
         let mw = monitor.size().width as f64 / scale;
         let x = ((mw - w) / 2.0) as i32;
+        // Set position before size — window moves to center, then expands in place
         let _ = window.set_position(tauri::LogicalPosition::new(x, 8));
     }
+    let _ = window.set_size(tauri::LogicalSize::new(w, h));
 }
 
 #[tauri::command]
@@ -150,6 +158,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            drag_window,
             resize_island,
             recenter_window,
             dismiss_island,

@@ -165,9 +165,6 @@ function setState(s) {
   island.classList.add('island-' + s);
   // Resize window to match island state
   var sz = STATE_SIZES[s] || STATE_SIZES.pill;
-  console.log('[setState]', s, sz[0] + 'x' + sz[1]);
-  console.log('[window.islandAPI]', typeof window.islandAPI, window.islandAPI ? Object.keys(window.islandAPI).join(',') : 'NULL');
-  console.log('[hasResize]', !!(window.islandAPI && window.islandAPI.resizeIsland));
   if (window.islandAPI && window.islandAPI.resizeIsland) window.islandAPI.resizeIsland(sz[0], sz[1]);
   updateHeight();
 }
@@ -190,7 +187,7 @@ function updateHeight() {
 new ResizeObserver(function() { if (state === 'expanded') updateHeight(); }).observe(feed);
 
 // ═══ Click ═══
-var clickCount = 0, clickTimer = null, wasDragging = false;
+var clickCount = 0, clickTimer = null;
 
 island.addEventListener('click', function(e) {
   if (e.target.closest('.btn') || e.target.closest('.icon-btn') || e.target.closest('.footer-link') || e.target.closest('.pet-option') || e.target.closest('.theme-option') || e.target.closest('.settings-popup') || e.target.closest('.agent-tab')) return;
@@ -214,7 +211,35 @@ island.addEventListener('click', function(e) {
   }
 });
 
-// No drag — fixed at top center, window = island size
+// ═══ Drag (OS native, only after mouse moves 5px) ═══
+var wasDragging = false;
+var dragPending = false, dragSX = 0, dragSY = 0;
+
+island.addEventListener('mousedown', function(e) {
+  if (e.button !== 0) return;
+  if (e.target.closest('.btn') || e.target.closest('.icon-btn') || e.target.closest('.footer-link') || e.target.closest('.settings-popup') || e.target.closest('.agent-tab') || e.target.closest('.action-btn') || e.target.closest('.btn-jump') || e.target.closest('.volume-slider') || e.target.closest('.pet-option') || e.target.closest('.theme-option') || e.target.closest('.notification-feed')) return;
+  dragPending = true;
+  dragSX = e.screenX;
+  dragSY = e.screenY;
+});
+
+document.addEventListener('mousemove', function(e) {
+  if (!dragPending) return;
+  var dx = Math.abs(e.screenX - dragSX);
+  var dy = Math.abs(e.screenY - dragSY);
+  if (dx > 5 || dy > 5) {
+    dragPending = false;
+    wasDragging = true;
+    if (window.__TAURI__) {
+      window.__TAURI__.window.getCurrentWindow().startDragging();
+    }
+    setTimeout(function() { wasDragging = false; }, 300);
+  }
+});
+
+document.addEventListener('mouseup', function() {
+  dragPending = false;
+});
 
 // ═══ Pill Status ═══
 function updatePillStatus() {

@@ -152,7 +152,7 @@ fn find_terminal_pid() -> Option<u32> { None }
 
 const WS_URL: &str = "ws://127.0.0.1:19432";
 const CONNECT_TIMEOUT: Duration = Duration::from_millis(2000);
-const PERMISSION_TIMEOUT: Duration = Duration::from_secs(9);
+const PERMISSION_TIMEOUT: Duration = Duration::from_secs(25);
 
 // ═══ Data Structures ═══
 
@@ -250,7 +250,7 @@ fn parse_args() -> Args {
         }
     }
 
-    // Map Gemini event names to unified names
+    // Map event names — "pre_tool" is special: becomes permission or tool_start based on tool name
     event_type = match event_type.as_str() {
         "BeforeTool" => "tool_start".into(),
         "AfterTool" => "tool_done".into(),
@@ -263,6 +263,7 @@ fn parse_args() -> Args {
         "PermissionRequest" => "permission".into(),
         "Stop" => "stop".into(),
         "Notification" => "notification".into(),
+        "pre_tool" => "pre_tool".into(), // decided later based on tool name
         other => other.into(),
     };
 
@@ -501,8 +502,21 @@ async fn main() {
         }
     }
 
-    // Generate requestId for permission events
-    if event.event_type == "permission" {
+    // pre_tool: decide based on tool name whether to block for approval
+    if event.event_type == "pre_tool" {
+        let tool = event.tool.as_deref().unwrap_or("");
+        eprintln!("[bridge] pre_tool: tool={:?} event.tool={:?} stdin_len={}", tool, event.tool, stdin_data.len());
+        let needs_approval = matches!(tool, "Bash" | "Write" | "shell" | "write_file" | "create_file");
+        if needs_approval {
+            event.event_type = "permission".to_string();
+            event.request_id = Some(uuid::Uuid::new_v4().to_string());
+        } else {
+            event.event_type = "tool_start".to_string();
+        }
+    }
+
+    // Generate requestId for direct permission events
+    if event.event_type == "permission" && event.request_id.is_none() {
         event.request_id = Some(uuid::Uuid::new_v4().to_string());
     }
 
@@ -530,20 +544,26 @@ async fn main() {
     if event.event_type == "permission" {
         let timeout_result = tokio::time::timeout(PERMISSION_TIMEOUT, read.next()).await;
 
-        match timeout_result {
+        let decision = match timeout_result {
             Ok(Some(Ok(msg))) => {
-                if let Ok(text) = msg.to_text() {
-                    // Write response to stdout for the hook system
-                    print!("{}", text);
-                }
+                msg.to_text().unwrap_or("").to_string()
             }
             _ => {
-                // Timeout or error: output default allow
-                print!(r#"{{"decision":"allow","reason":"timeout"}}"#);
+                // Timeout or error: default allow (don't block the agent)
+                r#"{"decision":"allow","reason":"timeout"}"#.to_string()
             }
-        }
-    }
+        };
 
-    // Close connection
-    let _ = write.close().await;
+        // Check if deny — Claude Code uses exit code 2 to block tool
+        let is_deny = decision.contains("\"deny\"");
+        print!("{}", decision);
+
+        let _ = write.close().await;
+
+        if is_deny {
+            std::process::exit(2); // Exit 2 = block tool execution
+        }
+    } else {
+        let _ = write.close().await;
+    }
 }

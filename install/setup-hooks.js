@@ -14,9 +14,11 @@ const GEMINI_SETTINGS = path.join(os.homedir(), '.gemini', 'settings.json');
 function claudeHooks() {
   const b = `"${BRIDGE_PATH}" --agent claude`;
   return {
-    PreToolUse: [{ matcher: '', hooks: [{ type: 'command', command: `${b} --event tool_start` }] }],
+    PreToolUse: [
+      // Single hook: bridge decides whether to wait for approval or fire-and-forget
+      { matcher: '', hooks: [{ type: 'command', command: `${b} --event pre_tool`, timeout: 30000 }] },
+    ],
     PostToolUse: [{ matcher: '', hooks: [{ type: 'command', command: `${b} --event tool_done` }] }],
-    PermissionRequest: [{ matcher: '', hooks: [{ type: 'command', command: `${b} --event permission` }] }],
     Stop: [{ matcher: '', hooks: [{ type: 'command', command: `${b} --event stop` }] }],
     Notification: [{ matcher: '', hooks: [{ type: 'command', command: `${b} --event notification` }] }],
     SessionStart: [{ matcher: '', hooks: [{ type: 'command', command: `${b} --event start` }] }],

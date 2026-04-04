@@ -523,8 +523,13 @@ function bindActionButtons(card, agent, data) {
       updatePillStatus();
       if (state === 'expanded') updateHeight();
       // Send decision to Rust → bridge → agent
+      console.log('[Approve] requestId=' + data.requestId + ' decision=' + btn.dataset.action);
       if (window.islandAPI && window.islandAPI.respondPermission && data.requestId) {
-        window.islandAPI.respondPermission(data.requestId, btn.dataset.action);
+        window.islandAPI.respondPermission(data.requestId, btn.dataset.action)
+          .then(function() { console.log('[Approve] OK'); })
+          .catch(function(e) { console.error('[Approve] Error:', e); });
+      } else {
+        console.log('[Approve] SKIP — no requestId or no API');
       }
     });
   });
@@ -545,6 +550,7 @@ if (window.islandAPI && window.islandAPI.onEvent) {
 
     if (e.event_type === 'start' || e.event_type === 'end') return;
 
+    console.log('[Event] type=' + e.event_type + ' tool=' + e.tool + ' requestId=' + e.requestId + ' agent=' + e.agent);
     createNotification(e);
   });
 }

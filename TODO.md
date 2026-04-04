@@ -1,16 +1,49 @@
 # Claude Island — TODO
 
-## 已知问题（第一版遗留）
-> 部分问题在 Tauri 重写时自然解决，标记为 [Tauri]；其余需要在当前版本修复
+## 已完成 ✅（Tauri v2 重写）
+- [x] Tauri v2 + Rust 后端（WebSocket server, 配置, 会话管理, 系统托盘）
+- [x] 窗口自适应三态 + 居中展开 + OS 原生拖拽
+- [x] Rust Bridge CLI（1MB 单二进制）
+- [x] Claude Code hooks 完整接入（tool_start/done/stop/permission/notification）
+- [x] Codex CLI 接入（notify turn-complete，Windows hooks 被官方禁用）
+- [x] Gemini CLI hooks 配置（待用户测试）
+- [x] 持久 session 卡片 + pill 实时状态 + 自动展开
+- [x] Jump 窗口跳转（进程树 HWND + GetConsoleWindow + AttachThreadInput）
+- [x] Session 自动命名（Claude 1, Claude 2, Codex 等）
+- [x] 4 主题切换 + 像素宠物 + 音效
+- [x] 多 Agent UI（Agent 筛选标签）
+- [x] 设置弹窗（主题/宠物/音量）
 
-- [ ] Electron 透明窗口卡顿 — 高频 IPC + 透明渲染掉帧 [Tauri]
-- [ ] 点击吞事件 — `-webkit-app-region: drag` 导致需点 1-2 次，pill 状态设置/声音按钮不可点 [已部分修复]
-- [ ] Jump 跳转不准 — 来源识别正确但跳转目标错误；取消操作后跳反；多窗口偶尔失灵
-- [ ] 拖动卡顿 — 快速拖动跟不上鼠标
-- [ ] 新通知时窗口自动偏移 + 三击恢复位置不准
-- [ ] 宠物像素泄漏 — pill 状态右上角露出多余宠物
-- [ ] 设置弹窗定位 — 受 overflow:hidden 裁剪，没跟随按钮位置 [已部分修复]
-- [ ] Windows DPI 175% 缩放 — 窗口尺寸异常，最小窗口限制 ~202x38
+## 当前优先 ⬅️
+
+### Codex 完整事件（文件监听方案）
+> Codex hooks 在 Windows 编译时被禁用（cfg!(windows)），notify 只有 turn-complete。
+> 方案：监听 ~/.codex/sessions/ 目录的 session JSONL 文件变化，解析事件转发给 island。
+
+- [ ] Rust 文件监听模块（notify crate 或 ReadDirectoryChangesW）
+- [ ] 监听 `~/.codex/sessions/YYYY/MM/DD/` 目录新文件
+- [ ] 解析 session JSONL 行：tool_use → tool_start, task_complete → stop
+- [ ] 冷启动补扫 — island 启动时扫描最近活跃的 session 文件
+- [ ] 去重 — 和 notify turn-complete 事件不重复
+- [ ] session_id 从文件名提取（rollout-YYYY-MM-DDThh-mm-ss-UUID.jsonl）
+
+### 内联审批（PreToolUse 拦截）
+- [ ] Bridge 在 PreToolUse 阶段判断是否需要权限
+- [ ] permission 事件双向通信（UI → bridge stdout → Agent）
+- [ ] Claude Code: PreToolUse hook 返回 allow/deny
+- [ ] Codex: 等 Windows hooks 支持后再做
+- [ ] 超时兜底 — hook timeout 前自动 allow
+
+### 配置持久化
+- [ ] island.config.json 读写（主题、宠物、音量、窗口位置）
+- [ ] 重启后恢复设置
+- [ ] 设置弹窗修改 → 自动保存
+
+### 清理 & 打包
+- [ ] 清理调试 console.log
+- [ ] 清理未使用的旧 Electron 代码（src/main.js, preload.js 等）
+- [ ] cargo tauri build → .msi / .exe 安装包
+- [ ] 图标设计
 
 ## Phase 1: UI 定稿 ✅
 - [x] 确定最终 UI 风格（Demo 4 毛玻璃）
@@ -335,6 +368,12 @@
 
 ## Hook 配置示例
 
+## Codex Windows Note
+
+- Current Windows Codex path: `notify` in `~/.codex/config.toml` + `~/.codex/sessions/**/*.jsonl` watch + startup rescan.
+- Do not treat `~/.codex/hooks.json` as the current Windows MVP path.
+- Keep `~/.codex/hooks.json` only as future macOS/Linux hooks documentation.
+
 ### Claude Code (~/.claude/settings.json)
 ```json
 {
@@ -346,12 +385,18 @@
 }
 ```
 
-### Codex CLI (~/.codex/hooks.json)
+### Codex CLI on Windows (~/.codex/config.toml)
+```toml
+notify = ["island-bridge", "--agent", "codex", "--event", "stop"]
+```
+
+### Codex CLI on macOS/Linux (~/.codex/hooks.json, future hooks path)
 ```json
 {
   "hooks": {
     "PreToolUse": [{ "command": "island-bridge --agent codex", "timeout": 5000 }],
-    "PostToolUse": [{ "command": "island-bridge --agent codex", "timeout": 5000 }]
+    "PostToolUse": [{ "command": "island-bridge --agent codex", "timeout": 5000 }],
+    "Stop": [{ "command": "island-bridge --agent codex", "timeout": 5000 }]
   }
 }
 ```

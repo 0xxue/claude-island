@@ -12,13 +12,13 @@ pub fn focus_window(source: &str, terminal_type: Option<&str>, terminal_id: Opti
             let fg_thread = windows::Win32::UI::WindowsAndMessaging::GetWindowThreadProcessId(fg, None);
             let cur_thread = windows::Win32::System::Threading::GetCurrentThreadId();
             if fg_thread != cur_thread {
-                windows::Win32::UI::WindowsAndMessaging::AttachThreadInput(cur_thread, fg_thread, true);
+                windows::Win32::System::Threading::AttachThreadInput(cur_thread, fg_thread, true);
             }
             let _ = ShowWindow(hwnd, SW_RESTORE);
             let _ = BringWindowToTop(hwnd);
             let _ = SetForegroundWindow(hwnd);
             if fg_thread != cur_thread {
-                windows::Win32::UI::WindowsAndMessaging::AttachThreadInput(cur_thread, fg_thread, false);
+                windows::Win32::System::Threading::AttachThreadInput(cur_thread, fg_thread, false);
             }
         }
     }

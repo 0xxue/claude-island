@@ -155,6 +155,7 @@ pub fn run() {
                 ws_server::start(handle, sessions, perm_router).await;
             });
 
+
             // Start as circle (56x56), centered at top
             if let Some(w) = app.get_webview_window("main") {
                 let _ = w.set_size(tauri::LogicalSize::new(56.0, 56.0));
